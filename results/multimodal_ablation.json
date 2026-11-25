@@ -1,5 +1,12 @@
 {
-  "AdaSigBoost (Signal + Z)": 3.6520206363038112,
-  "AdaSigBoost (Signal Only)": 11.091132539285946,
-  "LightGBM (Z Only)": 3.022228905641724
+  "etth1_energy": {
+    "AdaSigBoost (Signal + Z)": 3.6520206363038112,
+    "AdaSigBoost (Signal Only)": 11.091132539285946,
+    "LightGBM (Z Only)": 3.022228905641724
+  },
+  "joint_signal_covariate": {
+    "AdaSigBoost (Signal + Z)": 1.0343860304027064,
+    "AdaSigBoost (Signal Only)": 1.6068025541406357,
+    "LightGBM (Z Only)": 2.1983206128362287
+  }
 }

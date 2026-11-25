@@ -240,14 +240,59 @@ def run_multimodal_ablation(
     m_tab.fit(ds.Z[tr_idx], ds.y[tr_idx])
     mae_tab = float(mean_absolute_error(ds.y[te_idx], m_tab.predict(ds.Z[te_idx])))
 
+    # Also evaluate genuine Signal + Tabular complementary physics fusion (signal burst + RPM/temp calibration Z)
+    rng = np.random.default_rng(42)
+    syn = generate_synthetic_benchmark(n_samples=600, signal_length=256, snr_db=15.0, seed=42)
+    Z_cov = rng.normal(size=(600, 4))
+    y_joint = syn.y + 2.2 * np.maximum(Z_cov[:, 0], 0.0) - 1.4 * np.abs(Z_cov[:, 1])
+    X_tr_j, X_te_j = syn.X[:400], syn.X[400:]
+    Z_tr_j, Z_te_j = Z_cov[:400], Z_cov[400:]
+    y_tr_j, y_te_j = y_joint[:400], y_joint[400:]
+
+    j_both = AdaSigBoostRegressor(
+        n_estimators=28,
+        n_modes=6,
+        learning_rate=0.16,
+        max_depth=4,
+        lambda1=1.2,
+        n_filter_steps=6,
+        use_bic_stopping=False,
+        random_state=42,
+    ).fit(X_tr_j, y_tr_j, Z=Z_tr_j)
+    mae_j_both = float(mean_absolute_error(y_te_j, j_both.predict(X_te_j, Z=Z_te_j)))
+
+    j_sig = AdaSigBoostRegressor(
+        n_estimators=28,
+        n_modes=6,
+        learning_rate=0.16,
+        max_depth=4,
+        lambda1=1.2,
+        n_filter_steps=6,
+        use_bic_stopping=False,
+        random_state=42,
+    ).fit(X_tr_j, y_tr_j)
+    mae_j_sig = float(mean_absolute_error(y_te_j, j_sig.predict(X_te_j)))
+
+    j_tab = lgb.LGBMRegressor(n_estimators=100, max_depth=4, verbose=-1, random_state=42)
+    j_tab.fit(Z_tr_j, y_tr_j)
+    mae_j_tab = float(mean_absolute_error(y_te_j, j_tab.predict(Z_te_j)))
+
     out = {
-        "AdaSigBoost (Signal + Z)": mae_both,
-        "AdaSigBoost (Signal Only)": mae_sig,
-        "LightGBM (Z Only)": mae_tab,
+        "etth1_energy": {
+            "AdaSigBoost (Signal + Z)": mae_both,
+            "AdaSigBoost (Signal Only)": mae_sig,
+            "LightGBM (Z Only)": mae_tab,
+        },
+        "joint_signal_covariate": {
+            "AdaSigBoost (Signal + Z)": mae_j_both,
+            "AdaSigBoost (Signal Only)": mae_j_sig,
+            "LightGBM (Z Only)": mae_j_tab,
+        },
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "multimodal_ablation.json").write_text(json.dumps(out, indent=2))
     print(f"[Multimodal etth1] Signal+Z={mae_both:.4f} | Signal-Only={mae_sig:.4f} | Z-Only={mae_tab:.4f}", flush=True)
+    print(f"[Multimodal Joint] Signal+Z={mae_j_both:.4f} | Signal-Only={mae_j_sig:.4f} | Z-Only={mae_j_tab:.4f}", flush=True)
     return out
 
 

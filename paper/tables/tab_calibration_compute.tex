@@ -1,0 +1,23 @@
+\begin{table}[h]
+\centering
+\caption{Mean Probability Calibration Error (ECE $\downarrow$), Fold Training Time, and Per-Sample Inference Latency across Multi-Domain Benchmarks.}
+\label{tab:calibration_compute}
+\begin{tabular}{lccc}
+\toprule
+Method & Mean ECE ($\downarrow$) & Mean Train Time / Fold (s) & Mean Inference (ms/sample) \\
+\midrule
+AdaSigBoost & $0.0538$ & $12.82$ & $5.400$ \\
+XGBoost & $0.0624$ & $2.03$ & $0.016$ \\
+LightGBM & $0.0749$ & $0.92$ & $0.029$ \\
+CatBoost & $0.0595$ & $3.77$ & $0.019$ \\
+DWT+LightGBM & $0.0838$ & $0.38$ & $0.974$ \\
+VMD+CatBoost & $0.0389$ & $9.78$ & $23.909$ \\
+MultiRocket+Ridge & $0.2833$ & $0.92$ & $1.946$ \\
+MultiRocket+LightGBM & $0.0637$ & $2.20$ & $1.695$ \\
+LearnableFilter+MLP & $0.0785$ & $0.36$ & $0.012$ \\
+LearnableFilter+LightGBM & $0.0750$ & $0.41$ & $0.049$ \\
+PatchTST & $0.0500$ & $8.44$ & $0.212$ \\
+ModernTCN & $0.0431$ & $6.81$ & $0.422$ \\
+\bottomrule
+\end{tabular}
+\end{table}

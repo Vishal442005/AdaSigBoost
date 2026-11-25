@@ -56,9 +56,23 @@ Dataset & Domain & Channels ($C$) & Length ($T$) & Metric & Leakage Defense \\
 }
 \end{table}
 
+\section{Probability Calibration, Compute Efficiency, and OOD Stress Tests}
+\label{app:ood}
+Table~\ref{tab:calibration_compute} summarizes Expected Calibration Error (ECE), per-fold training runtime, and inference latency across the 8-dataset real-world benchmark suite: AdaSigBoost achieves well-calibrated probabilities ($0.0538$ ECE vs.\ $0.2833$ for MultiRocket+Ridge) and $4.4\times$ faster per-sample inference than VMD+CatBoost ($5.400$~ms vs.\ $23.909$~ms). Table~\ref{tab:ood_stress} and Figure~\ref{fig:ood_stress} evaluate zero-retraining resilience when models trained on clean data face unseen $1/f^\beta$ colored noise and abrupt sensor ramp+step baseline drift at test time.
+
+\input{tables/tab_calibration_compute.tex}
+\input{tables/tab_ood_stress.tex}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figures/fig_ood_stress.pdf}
+    \caption{Zero-retraining Out-of-Distribution (OOD) colored $1/f^\beta$ noise and sensor ramp+step drift stress tests on synthetic waveforms (left) and \texttt{FordA} acoustics (right).}
+    \label{fig:ood_stress}
+\end{figure}
+
 \section{Compute Transparency and Reproducibility Checklist}
 \label{app:compute}
-All CPU experiments were executed deterministically on a 10-core/12-thread Intel Core i5-1335U (15~GiB RAM) using Python~3.10, PyTorch~2.14.0+cpu, and C++17/OpenMP. Full reproduction commands are automated via \texttt{benchmarks/reproduce\_all.py} and verified by CI (\texttt{ruff}, \texttt{mypy}, and 119 \texttt{pytest} checks including \texttt{sklearn.utils.estimator\_checks.check\_estimator}).
+All CPU experiments were executed deterministically on a 10-core/12-thread Intel Core i5-1335U (15~GiB RAM) using Python~3.10, PyTorch~2.14.0+cpu, and C++17/OpenMP. Full reproduction commands are automated via \texttt{benchmarks/reproduce\_all.py} and verified by CI (\texttt{ruff}, \texttt{mypy}, and 121 \texttt{pytest} checks with 97\% Python statement coverage including \texttt{sklearn.utils.estimator\_checks.check\_estimator}).
 
 \section{NeurIPS / ICML Reproducibility Checklist}
 \label{app:checklist}

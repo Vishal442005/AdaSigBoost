@@ -1,0 +1,21 @@
+\begin{table}[h]
+\centering
+\caption{Zero-Retraining Out-of-Distribution (OOD) Noise and Sensor Drift Stress Tests.}
+\label{tab:ood_stress}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+ & \multicolumn{4}{c}{Synthetic Test RMSE ($\downarrow$)} & \multicolumn{3}{c}{\texttt{FordA} Test AUROC ($\uparrow$)} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-8}
+Method & Clean & Pink ($+5$ dB) & $1/f^2$ ($0$ dB) & Ramp+Step Drift & Clean & Colored ($+5$ dB) & Ramp+Step Drift \\
+\midrule
+AdaSigBoost & $0.678$ & $2.553$ & $2.390$ & $2.478$ & $0.973$ & $0.942$ & $0.959$ \\
+MultiRocket+Ridge & $1.665$ & $6.419$ & $5.051$ & $14.832$ & $0.909$ & $0.766$ & $0.711$ \\
+LightGBM & $2.035$ & $2.307$ & $3.115$ & $5.159$ & $0.694$ & $0.641$ & $0.564$ \\
+XGBoost & $2.137$ & $2.480$ & $3.155$ & $5.174$ & -- & -- & -- \\
+PatchTST & $2.582$ & $2.582$ & $2.583$ & $2.584$ & $0.952$ & $0.764$ & $0.723$ \\
+ModernTCN & $2.016$ & $2.373$ & $2.884$ & $3.141$ & -- & -- & -- \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

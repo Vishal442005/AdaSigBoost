@@ -32,8 +32,9 @@ contribs = clf.predict_mode_contributions(X, Z=Z)  # (N, K, n_classes)
 - `adasigboost/` — Core C++17/OpenMP (`csrc/`) + Python `scikit-learn`-compatible library (`decomposition/`, `descriptors/`, `core/`, `interpretability/`).
 - `docs/theory/` — Formal mathematical proofs (`AdaSigBoost_Theory_Note.tex` / `.pdf`).
 - `docs/PERFECTION_PLAN.md` — Complete end-to-end research & engineering blueprint.
-- `benchmarks/` — Synthetic colored-noise suite, leak-free multi-domain loaders, Optuna tuning, ablations (`ABL-1`–`ABL-7`), and Friedman/Nemenyi/Holm-Bonferroni statistical tests.
-- `tests/` — Unit tests covering C++ KKT optimality, Theorem 1 descent, Proposition 1 distractor pruning, and 100% `sklearn` `check_estimator` compliance.
+- `benchmarks/` — Synthetic colored-noise suite, leak-free multi-domain loaders, Optuna tuning, ablations (`ABL-1`–`ABL-7`), OOD noise/drift stress tests (`ood_stress.py`), case studies (`case_studies.py`), and end-to-end reproduction (`reproduce_all.py`).
+- `examples/` — Minimal end-to-end multi-channel + tabular tutorial (`quickstart.py` and `quickstart.ipynb`).
+- `tests/` — Unit tests covering C++ KKT optimality, Theorem 1 descent, Proposition 1 distractor pruning, losses/attribution/plotting (`>90%` coverage), and 100% `sklearn` `check_estimator` compliance.
 - `paper/` — LaTeX manuscript (`main.tex`, `appendix.tex`) and automated table generators (`paper/scripts/generate_tables.py`).
 
 ## Build, Verify & Reproduce
@@ -44,4 +45,6 @@ make test        # Run full pytest suite (including sklearn check_estimator)
 make lint        # Run ruff checks
 make typecheck   # Run mypy static type checks
 make theory      # Compile Phase I Theory Note PDF
+python examples/quickstart.py         # Run quickstart demo (multi-channel + attribution)
+python -m benchmarks.reproduce_all    # Reproduce benchmarks, figures, tables & manuscript PDF
 ```

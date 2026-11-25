@@ -1,0 +1,62 @@
+{
+  "synthetic_rmse": {
+    "AdaSigBoost": {
+      "Clean (+20dB)": 0.6784017441300292,
+      "OOD Pink (+5dB, 1/f)": 2.5532992025761225,
+      "OOD Drift Noise (0dB, 1/f^2)": 2.390048929002077,
+      "OOD Ramp+Step Drift": 2.4782667781614807
+    },
+    "MultiRocket+Ridge": {
+      "Clean (+20dB)": 1.6649128810599108,
+      "OOD Pink (+5dB, 1/f)": 6.419331089616067,
+      "OOD Drift Noise (0dB, 1/f^2)": 5.050969358730897,
+      "OOD Ramp+Step Drift": 14.831545369815961
+    },
+    "LightGBM": {
+      "Clean (+20dB)": 2.0347538399391563,
+      "OOD Pink (+5dB, 1/f)": 2.3072187569380462,
+      "OOD Drift Noise (0dB, 1/f^2)": 3.1150405892050848,
+      "OOD Ramp+Step Drift": 5.158960902461767
+    },
+    "XGBoost": {
+      "Clean (+20dB)": 2.13741579509105,
+      "OOD Pink (+5dB, 1/f)": 2.479799206714285,
+      "OOD Drift Noise (0dB, 1/f^2)": 3.155266736683821,
+      "OOD Ramp+Step Drift": 5.174024924735362
+    },
+    "PatchTST": {
+      "Clean (+20dB)": 2.582396750337546,
+      "OOD Pink (+5dB, 1/f)": 2.5824460056170104,
+      "OOD Drift Noise (0dB, 1/f^2)": 2.58278658341577,
+      "OOD Ramp+Step Drift": 2.5835378431222202
+    },
+    "ModernTCN": {
+      "Clean (+20dB)": 2.015785014548347,
+      "OOD Pink (+5dB, 1/f)": 2.372681917339365,
+      "OOD Drift Noise (0dB, 1/f^2)": 2.8842648028240165,
+      "OOD Ramp+Step Drift": 3.1410979556011593
+    }
+  },
+  "forda_auroc": {
+    "AdaSigBoost": {
+      "Clean": 0.9732877016756301,
+      "OOD Colored (+5dB)": 0.9415529579092404,
+      "OOD Ramp+Step Drift": 0.9587537223876617
+    },
+    "MultiRocket+Ridge": {
+      "Clean": 0.9092404106849193,
+      "OOD Colored (+5dB)": 0.7663896173163252,
+      "OOD Ramp+Step Drift": 0.7114093959731543
+    },
+    "LightGBM": {
+      "Clean": 0.6944753100137784,
+      "OOD Colored (+5dB)": 0.6413173918840838,
+      "OOD Ramp+Step Drift": 0.5643806391395173
+    },
+    "PatchTST": {
+      "Clean": 0.9524867771900973,
+      "OOD Colored (+5dB)": 0.7640784034845993,
+      "OOD Ramp+Step Drift": 0.7230321347615449
+    }
+  }
+}

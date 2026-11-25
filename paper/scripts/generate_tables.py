@@ -136,16 +136,90 @@ def generate_multimodal_table(json_path: Path, out_tex: Path) -> None:
     lines = [
         r"\begin{table}[t]",
         r"\centering",
-        r"\caption{Multimodal Signal + Tabular Covariate Fusion on \texttt{etth1\_energy} (24h Forecast MAE $\downarrow$).}",
+        r"\caption{Multimodal Signal + Tabular Covariate Fusion MAE ($\downarrow$) on \texttt{etth1\_energy} and Joint Signal+Covariate Benchmarks.}",
         r"\label{tab:multimodal}",
-        r"\begin{tabular}{lc}",
+        r"\begin{tabular}{lcc}",
         r"\toprule",
-        r"Input Modality & Test MAE ($\downarrow$) \\",
+        r"Input Modality & \texttt{etth1\_energy} (24h MAE) & Joint Physics + Covariates (MAE) \\",
         r"\midrule",
     ]
-    for name, val in data.items():
-        lines.append(f"{name} & ${val:.4f}$ " + r"\\")
+    etth = data.get("etth1_energy", data)
+    joint = data.get("joint_signal_covariate", {})
+    for name in ["AdaSigBoost (Signal + Z)", "AdaSigBoost (Signal Only)", "LightGBM (Z Only)"]:
+        v1 = etth.get(name)
+        v2 = joint.get(name)
+        c1 = f"${v1:.3f}$" if v1 is not None else "--"
+        c2 = f"${v2:.3f}$" if v2 is not None else "--"
+        lines.append(f"{name} & {c1} & {c2} " + r"\\")
     lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}"])
+    out_tex.parent.mkdir(parents=True, exist_ok=True)
+    out_tex.write_text("\n".join(lines) + "\n")
+
+
+def generate_calibration_compute_table(json_path: Path, out_tex: Path) -> None:
+    if not json_path.exists():
+        return
+    raw = json.loads(json_path.read_text())
+    ds_names = [k for k in raw.keys() if not k.startswith("_")]
+    if not ds_names:
+        return
+    model_names = list(raw[ds_names[0]]["models"].keys())
+    lines = [
+        r"\begin{table}[h]",
+        r"\centering",
+        r"\caption{Mean Probability Calibration Error (ECE $\downarrow$), Fold Training Time, and Per-Sample Inference Latency across Multi-Domain Benchmarks.}",
+        r"\label{tab:calibration_compute}",
+        r"\begin{tabular}{lccc}",
+        r"\toprule",
+        r"Method & Mean ECE ($\downarrow$) & Mean Train Time / Fold (s) & Mean Inference (ms/sample) \\",
+        r"\midrule",
+    ]
+    for m in model_names:
+        eces = [
+            raw[d]["models"][m]["ece_mean"]
+            for d in ds_names
+            if m in raw[d]["models"] and "ece_mean" in raw[d]["models"][m]
+        ]
+        times = [raw[d]["models"][m]["train_time_s"] for d in ds_names if m in raw[d]["models"]]
+        infers = [raw[d]["models"][m]["infer_ms_per_sample"] for d in ds_names if m in raw[d]["models"]]
+        ece_str = f"${sum(eces)/len(eces):.4f}$" if eces else "--"
+        t_str = f"${sum(times)/len(times):.2f}$" if times else "--"
+        i_str = f"${sum(infers)/len(infers):.3f}$" if infers else "--"
+        lines.append(f"{m} & {ece_str} & {t_str} & {i_str} " + r"\\")
+    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}"])
+    out_tex.parent.mkdir(parents=True, exist_ok=True)
+    out_tex.write_text("\n".join(lines) + "\n")
+
+
+def generate_ood_table(json_path: Path, out_tex: Path) -> None:
+    if not json_path.exists():
+        return
+    raw = json.loads(json_path.read_text())
+    synth = raw.get("synthetic_rmse", {})
+    ford = raw.get("forda_auroc", {})
+    if not synth:
+        return
+    lines = [
+        r"\begin{table}[h]",
+        r"\centering",
+        r"\caption{Zero-Retraining Out-of-Distribution (OOD) Noise and Sensor Drift Stress Tests.}",
+        r"\label{tab:ood_stress}",
+        r"\resizebox{\textwidth}{!}{%",
+        r"\begin{tabular}{lccccccc}",
+        r"\toprule",
+        r" & \multicolumn{4}{c}{Synthetic Test RMSE ($\downarrow$)} & \multicolumn{3}{c}{\texttt{FordA} Test AUROC ($\uparrow$)} \\",
+        r"\cmidrule(lr){2-5}\cmidrule(lr){6-8}",
+        r"Method & Clean & Pink ($+5$ dB) & $1/f^2$ ($0$ dB) & Ramp+Step Drift & Clean & Colored ($+5$ dB) & Ramp+Step Drift \\",
+        r"\midrule",
+    ]
+    s_keys = ["Clean (+20dB)", "OOD Pink (+5dB, 1/f)", "OOD Drift Noise (0dB, 1/f^2)", "OOD Ramp+Step Drift"]
+    f_keys = ["Clean", "OOD Colored (+5dB)", "OOD Ramp+Step Drift"]
+    for m, s_rec in synth.items():
+        s_cells = [f"${s_rec[k]:.3f}$" for k in s_keys]
+        f_rec = ford.get(m, {})
+        f_cells = [f"${f_rec[k]:.3f}$" if k in f_rec else "--" for k in f_keys]
+        lines.append(f"{m} & " + " & ".join(s_cells + f_cells) + r" \\")
+    lines.extend([r"\bottomrule", r"\end{tabular}%", r"}", r"\end{table}"])
     out_tex.parent.mkdir(parents=True, exist_ok=True)
     out_tex.write_text("\n".join(lines) + "\n")
 
@@ -158,6 +232,8 @@ def main() -> None:
     generate_real_table(results_dir / "real_benchmark.json", tables_dir / "tab_real_benchmark.tex")
     generate_stats_table(results_dir / "real_benchmark.json", tables_dir / "tab_stats_significance.tex")
     generate_multimodal_table(results_dir / "multimodal_ablation.json", tables_dir / "tab_multimodal.tex")
+    generate_calibration_compute_table(results_dir / "real_benchmark.json", tables_dir / "tab_calibration_compute.tex")
+    generate_ood_table(results_dir / "ood_stress.json", tables_dir / "tab_ood_stress.tex")
 
 
 if __name__ == "__main__":

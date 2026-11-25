@@ -1,14 +1,14 @@
 \begin{table}[t]
 \centering
-\caption{Multimodal Signal + Tabular Covariate Fusion on \texttt{etth1\_energy} (24h Forecast MAE $\downarrow$).}
+\caption{Multimodal Signal + Tabular Covariate Fusion MAE ($\downarrow$) on \texttt{etth1\_energy} and Joint Signal+Covariate Benchmarks.}
 \label{tab:multimodal}
-\begin{tabular}{lc}
+\begin{tabular}{lcc}
 \toprule
-Input Modality & Test MAE ($\downarrow$) \\
+Input Modality & \texttt{etth1\_energy} (24h MAE) & Joint Physics + Covariates (MAE) \\
 \midrule
-AdaSigBoost (Signal + Z) & $3.6520$ \\
-AdaSigBoost (Signal Only) & $11.0911$ \\
-LightGBM (Z Only) & $3.0222$ \\
+AdaSigBoost (Signal + Z) & $3.652$ & $1.034$ \\
+AdaSigBoost (Signal Only) & $11.091$ & $1.607$ \\
+LightGBM (Z Only) & $3.022$ & $2.198$ \\
 \bottomrule
 \end{tabular}
 \end{table}

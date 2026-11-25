@@ -1,0 +1,170 @@
+{
+  "load_disjoint_accuracy": 1.0,
+  "mode_deletion_auc": {
+    "deletion_scores": [
+      1.0,
+      1.0,
+      0.9963768115942029,
+      0.5700483091787439,
+      0.5700483091787439,
+      0.5700483091787439,
+      0.5700483091787439
+    ],
+    "deletion_auc": 0.7485909822866343,
+    "mode_order": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      4
+    ],
+    "n_modes": 6
+  },
+  "hz_alignment_error": {
+    "mean_min_hz_error": 1079.414040743121,
+    "max_min_hz_error": 2426.947843275674
+  },
+  "mode_summary": {
+    "0": {
+      "cum_weight_norm": 19.105752943728536,
+      "weighted_freq_hz": 220.61756409146747,
+      "active_stages": 20
+    },
+    "1": {
+      "cum_weight_norm": 11.797050347470494,
+      "weighted_freq_hz": 2576.023606886046,
+      "active_stages": 20
+    },
+    "2": {
+      "cum_weight_norm": 7.033280269142036,
+      "weighted_freq_hz": 1868.6794729985754,
+      "active_stages": 18
+    },
+    "3": {
+      "cum_weight_norm": 3.744862768686291,
+      "weighted_freq_hz": 1978.153723223413,
+      "active_stages": 14
+    },
+    "4": {
+      "cum_weight_norm": 1.4253984409058458,
+      "weighted_freq_hz": 1903.5017788991554,
+      "active_stages": 8
+    },
+    "5": {
+      "cum_weight_norm": 1.7760965634529282,
+      "weighted_freq_hz": 2204.5322715488965,
+      "active_stages": 9
+    }
+  },
+  "top_stage_modes": [
+    {
+      "stage": 9,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11528580486774445,
+      "freq_hz": 220.17966855635063,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.4385389648540459
+    },
+    {
+      "stage": 10,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11547550410032273,
+      "freq_hz": 220.5419674031375,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.36724444630486
+    },
+    {
+      "stage": 11,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.116001658141613,
+      "freq_hz": 221.546847601127,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.3186239231638064
+    },
+    {
+      "stage": 12,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11649377942085266,
+      "freq_hz": 222.48673001142737,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.3160338224990957
+    },
+    {
+      "stage": 13,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.1168305143713951,
+      "freq_hz": 223.129846394115,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.3140736714262928
+    },
+    {
+      "stage": 14,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.1170777440071106,
+      "freq_hz": 223.60202021735014,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.2629658738989167
+    },
+    {
+      "stage": 8,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11499460339546204,
+      "freq_hz": 219.62351471135804,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.2416738316540696
+    },
+    {
+      "stage": 15,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11740997582674026,
+      "freq_hz": 224.23653625350786,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.1826324849926615
+    },
+    {
+      "stage": 7,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11427367627620696,
+      "freq_hz": 218.24664533569668,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.168548552772014
+    },
+    {
+      "stage": 16,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11772536635398864,
+      "freq_hz": 224.83888779049911,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.0805194240752733
+    },
+    {
+      "stage": 0,
+      "mode": 1,
+      "atom_type": "gabor",
+      "omega_rad": 0.5618487954139709,
+      "freq_hz": 1073.0521567243259,
+      "bandwidth_rad": 0.6956308007240295,
+      "weight_norm": 1.0791660797847054
+    },
+    {
+      "stage": 6,
+      "mode": 0,
+      "atom_type": "trend",
+      "omega_rad": 0.11345350742340088,
+      "freq_hz": 216.68023821056752,
+      "bandwidth_rad": 0.15707963705062866,
+      "weight_norm": 1.029115417343624
+    }
+  ]
+}

@@ -1,0 +1,798 @@
+{
+  "ECG5000": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 0.9293333333333335,
+        "primary_std": 0.0037712361663282566,
+        "train_time_s": 9.23060930133397,
+        "infer_ms_per_sample": 2.3109278093324974
+      },
+      "XGBoost": {
+        "primary_mean": 0.9346666666666666,
+        "primary_std": 0.0037712361663282045,
+        "train_time_s": 0.9559189176658643,
+        "infer_ms_per_sample": 0.013404533334930116
+      },
+      "LightGBM": {
+        "primary_mean": 0.9346666666666668,
+        "primary_std": 0.0037712361663282045,
+        "train_time_s": 1.0281841910000367,
+        "infer_ms_per_sample": 0.018958941332433216
+      },
+      "CatBoost": {
+        "primary_mean": 0.9346666666666666,
+        "primary_std": 0.006798692684790335,
+        "train_time_s": 2.128824907999539,
+        "infer_ms_per_sample": 0.00809096266554358
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 0.8906666666666667,
+        "primary_std": 0.011469767022723513,
+        "train_time_s": 0.3895913780003563,
+        "infer_ms_per_sample": 0.30389795200123143
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.8986666666666667,
+        "primary_std": 0.010498677165349092,
+        "train_time_s": 9.831288802333196,
+        "infer_ms_per_sample": 19.28100656533449
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 0.9493333333333333,
+        "primary_std": 0.004988876515698593,
+        "train_time_s": 0.729814759666624,
+        "infer_ms_per_sample": 1.0128230466677148
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 0.944,
+        "primary_std": 0.0,
+        "train_time_s": 4.524623862665976,
+        "infer_ms_per_sample": 0.8583070226668497
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 0.7319999999999999,
+        "primary_std": 0.014236104336041762,
+        "train_time_s": 0.5617421539997546,
+        "infer_ms_per_sample": 0.006936953332721411
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 0.8693333333333334,
+        "primary_std": 0.006798692684790386,
+        "train_time_s": 0.4133033336668935,
+        "infer_ms_per_sample": 0.0313900200004961
+      },
+      "PatchTST": {
+        "primary_mean": 0.9306666666666666,
+        "primary_std": 0.006798692684790335,
+        "train_time_s": 3.141731110999899,
+        "infer_ms_per_sample": 0.044113829331763554
+      },
+      "ModernTCN": {
+        "primary_mean": 0.9266666666666667,
+        "primary_std": 0.0018856180831641283,
+        "train_time_s": 4.1708649026665325,
+        "infer_ms_per_sample": 0.18638226266678734
+      }
+    }
+  },
+  "eeg_eyestate": {
+    "metric": "auroc",
+    "task": "binary",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 0.8295454545454546,
+        "primary_std": 0.23307000095326,
+        "train_time_s": 1.3086933123328588,
+        "infer_ms_per_sample": 0.7558147601874254,
+        "ece_mean": 0.017256074116855313
+      },
+      "XGBoost": {
+        "primary_mean": 0.6666666666666666,
+        "primary_std": 0.23570226039551584,
+        "train_time_s": 0.03941542633341063,
+        "infer_ms_per_sample": 0.03129554582342037,
+        "ece_mean": 0.01749687507899117
+      },
+      "LightGBM": {
+        "primary_mean": 0.9217171717171717,
+        "primary_std": 0.030022580478446134,
+        "train_time_s": 0.07000792400018933,
+        "infer_ms_per_sample": 0.07299055237907474,
+        "ece_mean": 0.03381432680486246
+      },
+      "CatBoost": {
+        "primary_mean": 0.9841269841269842,
+        "primary_std": 0.022447834323382487,
+        "train_time_s": 0.7967240519998692,
+        "infer_ms_per_sample": 0.05378825565013196,
+        "ece_mean": 0.029993824511389544
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 0.4212868159993377,
+        "infer_ms_per_sample": 3.693279390808042,
+        "ece_mean": 0.033822094473916264
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.9765512265512265,
+        "primary_std": 0.019447087982602553,
+        "train_time_s": 1.2746912899995853,
+        "infer_ms_per_sample": 13.169632153643605,
+        "ece_mean": 0.018792170775849635
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 0.05451377999937298,
+        "infer_ms_per_sample": 0.6878183377590507,
+        "ece_mean": 0.2622441394893088
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 0.8524531024531025,
+        "primary_std": 0.0708927238450926,
+        "train_time_s": 0.2780891903336548,
+        "infer_ms_per_sample": 0.845361683088707,
+        "ece_mean": 0.03382731740570394
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 0.9220779220779222,
+        "primary_std": 0.05903974760599936,
+        "train_time_s": 0.06369151533423671,
+        "infer_ms_per_sample": 0.013014820641032864,
+        "ece_mean": 0.028530725324996786
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 0.9653679653679653,
+        "primary_std": 0.024215997758785617,
+        "train_time_s": 0.08162119733303068,
+        "infer_ms_per_sample": 0.16420797602726114,
+        "ece_mean": 0.0352275477243486
+      },
+      "PatchTST": {
+        "primary_mean": 0.9844877344877344,
+        "primary_std": 0.010977722983191156,
+        "train_time_s": 2.338109328333909,
+        "infer_ms_per_sample": 0.30865408564497976,
+        "ece_mean": 0.027999725426086253
+      },
+      "ModernTCN": {
+        "primary_mean": 0.9920634920634921,
+        "primary_std": 0.011223917161691244,
+        "train_time_s": 0.43940022966671677,
+        "infer_ms_per_sample": 0.11784802596290489,
+        "ece_mean": 0.04706181269703486
+      }
+    }
+  },
+  "Epilepsy": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 0.9709348622392101,
+        "primary_std": 0.010192083712499335,
+        "train_time_s": 13.459355173334188,
+        "infer_ms_per_sample": 7.318325177903233,
+        "ece_mean": 0.08001499206580794
+      },
+      "XGBoost": {
+        "primary_mean": 0.9200111482720178,
+        "primary_std": 0.004938697086585695,
+        "train_time_s": 1.493572274333322,
+        "infer_ms_per_sample": 0.01885050357823821,
+        "ece_mean": 0.04649464379646612
+      },
+      "LightGBM": {
+        "primary_mean": 0.941790093964007,
+        "primary_std": 0.010420954294541089,
+        "train_time_s": 0.5465929753324114,
+        "infer_ms_per_sample": 0.049035617014177045,
+        "ece_mean": 0.04287400564531152
+      },
+      "CatBoost": {
+        "primary_mean": 0.9382465360726231,
+        "primary_std": 0.013344111815848065,
+        "train_time_s": 3.5453972216667657,
+        "infer_ms_per_sample": 0.017953796940931466,
+        "ece_mean": 0.08126572717478861
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 0.9745580506450072,
+        "primary_std": 0.005068593273514657,
+        "train_time_s": 0.185818938334099,
+        "infer_ms_per_sample": 0.8016465439141608,
+        "ece_mean": 0.024386584173883535
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.9890508042681955,
+        "primary_std": 0.00897266657802922,
+        "train_time_s": 3.413094805666939,
+        "infer_ms_per_sample": 13.620440928970007,
+        "ece_mean": 0.02771897344884842
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 0.9527392896958115,
+        "primary_std": 0.005015142188625741,
+        "train_time_s": 0.11220752099931512,
+        "infer_ms_per_sample": 0.6443858288379328,
+        "ece_mean": 0.32331577710948967
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 0.9382067208154163,
+        "primary_std": 0.010110096585139458,
+        "train_time_s": 0.2964538043336991,
+        "infer_ms_per_sample": 0.5656989630105995,
+        "ece_mean": 0.047759631067431696
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 0.9162286988373944,
+        "primary_std": 0.026239190956595916,
+        "train_time_s": 0.05888528533311425,
+        "infer_ms_per_sample": 0.008091959988905047,
+        "ece_mean": 0.09389512564824976
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 0.9600254817646122,
+        "primary_std": 0.004955040352318526,
+        "train_time_s": 0.10020683666637827,
+        "infer_ms_per_sample": 0.031089859688832072,
+        "ece_mean": 0.03990801291658599
+      },
+      "PatchTST": {
+        "primary_mean": 0.9890906195254021,
+        "primary_std": 0.00887514145537005,
+        "train_time_s": 2.202115494334066,
+        "infer_ms_per_sample": 0.09720361816824896,
+        "ece_mean": 0.021214901904977036
+      },
+      "ModernTCN": {
+        "primary_mean": 0.9708154164675905,
+        "primary_std": 0.022561518471138933,
+        "train_time_s": 1.8100238513337292,
+        "infer_ms_per_sample": 0.21927713811878577,
+        "ece_mean": 0.03885012651599503
+      }
+    }
+  },
+  "cwru_bearing": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 26.712418213000092,
+        "infer_ms_per_sample": 14.072810861918494,
+        "ece_mean": 0.05967956176999089
+      },
+      "XGBoost": {
+        "primary_mean": 0.8433132424877707,
+        "primary_std": 0.05714972047519212,
+        "train_time_s": 3.3834583425004894,
+        "infer_ms_per_sample": 0.013870985476954674,
+        "ece_mean": 0.08267239488499889
+      },
+      "LightGBM": {
+        "primary_mean": 0.8919243535988819,
+        "primary_std": 0.10576083158630328,
+        "train_time_s": 1.848641117500847,
+        "infer_ms_per_sample": 0.01891767247533875,
+        "ece_mean": 0.04788147437803175
+      },
+      "CatBoost": {
+        "primary_mean": 0.8907669461914745,
+        "primary_std": 0.10460342417889584,
+        "train_time_s": 10.334474797999064,
+        "infer_ms_per_sample": 0.015642419918908832,
+        "ece_mean": 0.0881113477985763
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 0.1718685395007924,
+        "infer_ms_per_sample": 0.16472890664435413,
+        "ece_mean": 0.00013487719818394694
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.9984276729559749,
+        "primary_std": 0.0015723270440251569,
+        "train_time_s": 9.744885475499359,
+        "infer_ms_per_sample": 32.059804722201875,
+        "ece_mean": 0.009073157195552978
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 2.942939997000394,
+        "infer_ms_per_sample": 7.143969809683002,
+        "ece_mean": 0.32058018326751725
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 3.8082787620005547,
+        "infer_ms_per_sample": 6.5535085736595855,
+        "ece_mean": 0.007413426946140378
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 1.0042809040005523,
+        "infer_ms_per_sample": 0.030703600737411407,
+        "ece_mean": 0.12891835990348205
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 1.0891159860002517,
+        "infer_ms_per_sample": 0.053268799571916686,
+        "ece_mean": 0.012269865645076119
+      },
+      "PatchTST": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 29.785148280500835,
+        "infer_ms_per_sample": 0.6598599064460606,
+        "ece_mean": 0.0009945034980773926
+      },
+      "ModernTCN": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 20.673603201000333,
+        "infer_ms_per_sample": 1.7042415038458691,
+        "ece_mean": 0.0013762414455413818
+      }
+    }
+  },
+  "Wafer": {
+    "metric": "auroc",
+    "task": "binary",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 0.9971264367816092,
+        "primary_std": 0.0025642366545672052,
+        "train_time_s": 8.31958665666692,
+        "infer_ms_per_sample": 2.6912958986625504,
+        "ece_mean": 0.012875696245226288
+      },
+      "XGBoost": {
+        "primary_mean": 0.9981641123882503,
+        "primary_std": 0.002266134988278767,
+        "train_time_s": 0.2182874686671615,
+        "infer_ms_per_sample": 0.005946469333139248,
+        "ece_mean": 0.013178343693415313
+      },
+      "LightGBM": {
+        "primary_mean": 0.9990421455938697,
+        "primary_std": 0.0013546106919282634,
+        "train_time_s": 0.1803253049996177,
+        "infer_ms_per_sample": 0.007220672002101007,
+        "ece_mean": 0.011968302796141425
+      },
+      "CatBoost": {
+        "primary_mean": 0.9988026819923371,
+        "primary_std": 0.0010346010054929449,
+        "train_time_s": 0.8667692306668565,
+        "infer_ms_per_sample": 0.009979205334578486,
+        "ece_mean": 0.014290766666474298
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 0.9398946360153259,
+        "primary_std": 0.012653108059025786,
+        "train_time_s": 0.2194991526666854,
+        "infer_ms_per_sample": 0.2795916666655103,
+        "ece_mean": 0.02692986810879273
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.9875478927203064,
+        "primary_std": 0.0021148852649251868,
+        "train_time_s": 7.452021449332581,
+        "infer_ms_per_sample": 14.56557780266788,
+        "ece_mean": 0.025437048623435498
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 0.9997605363984675,
+        "primary_std": 0.0001955212119080047,
+        "train_time_s": 0.6147837013334841,
+        "infer_ms_per_sample": 0.8502780226675289,
+        "ece_mean": 0.2720613174435325
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 0.9992816091954023,
+        "primary_std": 0.0010159580189461582,
+        "train_time_s": 0.8986540960001245,
+        "infer_ms_per_sample": 0.7770734880032251,
+        "ece_mean": 0.010123717265564436
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 0.5063856960408685,
+        "primary_std": 0.036188506257340256,
+        "train_time_s": 0.2738283713333658,
+        "infer_ms_per_sample": 0.00718598133486618,
+        "ece_mean": 0.019098594427108793
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 0.9596503831417625,
+        "primary_std": 0.002311371685116628,
+        "train_time_s": 0.2441841433337686,
+        "infer_ms_per_sample": 0.019004820002010092,
+        "ece_mean": 0.02446406958422335
+      },
+      "PatchTST": {
+        "primary_mean": 0.9937739463601534,
+        "primary_std": 0.0036526376719820644,
+        "train_time_s": 3.1727873560006024,
+        "infer_ms_per_sample": 0.046423159998084884,
+        "ece_mean": 0.03877215035756429
+      },
+      "ModernTCN": {
+        "primary_mean": 0.9202586206896551,
+        "primary_std": 0.029608393708953507,
+        "train_time_s": 4.332234355999996,
+        "infer_ms_per_sample": 0.15610370533492338,
+        "ece_mean": 0.048848952849705994
+      }
+    }
+  },
+  "etth1_energy": {
+    "metric": "mae",
+    "task": "regression",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 4.131942937441104,
+        "primary_std": 0.4732270797888649,
+        "train_time_s": 12.542668449332874,
+        "infer_ms_per_sample": 4.183649597149324
+      },
+      "XGBoost": {
+        "primary_mean": 5.067946918507949,
+        "primary_std": 1.9168103511657986,
+        "train_time_s": 2.659174713666289,
+        "infer_ms_per_sample": 0.016998169337775527
+      },
+      "LightGBM": {
+        "primary_mean": 4.861208415433235,
+        "primary_std": 1.7376934722338067,
+        "train_time_s": 0.45892737166650477,
+        "infer_ms_per_sample": 0.025448985739954317
+      },
+      "CatBoost": {
+        "primary_mean": 5.459797573311296,
+        "primary_std": 2.034104395142381,
+        "train_time_s": 2.511026676000256,
+        "infer_ms_per_sample": 0.02910000356890588
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 5.139364487088823,
+        "primary_std": 0.8646498843602223,
+        "train_time_s": 0.8368223259997952,
+        "infer_ms_per_sample": 1.9110998270958774
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 6.343504478736673,
+        "primary_std": 1.3200224187435756,
+        "train_time_s": 15.924948806999964,
+        "infer_ms_per_sample": 39.61422315686072
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 6.558040109887511,
+        "primary_std": 1.0428833116728402,
+        "train_time_s": 0.555419909000193,
+        "infer_ms_per_sample": 1.2281592976858928
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 5.49529757058444,
+        "primary_std": 1.3396726095405957,
+        "train_time_s": 0.5074331843334221,
+        "infer_ms_per_sample": 0.8479119714788608
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 17.52505600502005,
+        "primary_std": 0.7449382063696485,
+        "train_time_s": 0.16291089166710057,
+        "infer_ms_per_sample": 0.008282768271742895
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 3.896051757138533,
+        "primary_std": 0.6796951433078804,
+        "train_time_s": 0.3070335903339583,
+        "infer_ms_per_sample": 0.03053434581250229
+      },
+      "PatchTST": {
+        "primary_mean": 6.82552959617234,
+        "primary_std": 1.1321402063863621,
+        "train_time_s": 12.25753887566619,
+        "infer_ms_per_sample": 0.31264087165627624
+      },
+      "ModernTCN": {
+        "primary_mean": 6.43617622263672,
+        "primary_std": 1.5110880469042096,
+        "train_time_s": 3.437245423000301,
+        "infer_ms_per_sample": 0.17656216220923993
+      }
+    }
+  },
+  "FordA": {
+    "metric": "auroc",
+    "task": "binary",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 0.9487563675460082,
+        "primary_std": 0.026407856232607413,
+        "train_time_s": 19.061339886332764,
+        "infer_ms_per_sample": 8.498847798669885,
+        "ece_mean": 0.04914648360492143
+      },
+      "XGBoost": {
+        "primary_mean": 0.7213049629487261,
+        "primary_std": 0.02145417785962543,
+        "train_time_s": 2.0410023020006824,
+        "infer_ms_per_sample": 0.008945971996581648,
+        "ece_mean": 0.0848138009707133
+      },
+      "LightGBM": {
+        "primary_mean": 0.6956302207306435,
+        "primary_std": 0.0025414412702527674,
+        "train_time_s": 0.7511554416669242,
+        "infer_ms_per_sample": 0.014542761331540532,
+        "ece_mean": 0.07376610840171137
+      },
+      "CatBoost": {
+        "primary_mean": 0.6999172444891261,
+        "primary_std": 0.033375215290266276,
+        "train_time_s": 2.601359378667136,
+        "infer_ms_per_sample": 0.009000121334490055,
+        "ece_mean": 0.049937225742601954
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 0.9101222338854474,
+        "primary_std": 0.012926266339881157,
+        "train_time_s": 0.28738502066698857,
+        "infer_ms_per_sample": 0.29180530399510946,
+        "ece_mean": 0.07732297516626431
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.9463443756149887,
+        "primary_std": 0.012185098505692155,
+        "train_time_s": 19.401780243666508,
+        "infer_ms_per_sample": 34.99942242399993,
+        "ece_mean": 0.0690276527096909
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 0.9174237537186798,
+        "primary_std": 0.011189287334395202,
+        "train_time_s": 1.2648805696668812,
+        "infer_ms_per_sample": 2.1873190653301813,
+        "ece_mean": 0.15197224473768348
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 0.9682387421129492,
+        "primary_std": 0.00476147293012811,
+        "train_time_s": 1.5170173566663532,
+        "infer_ms_per_sample": 1.9442357986651284,
+        "ece_mean": 0.04111260852943851
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 0.6024727639051106,
+        "primary_std": 0.0392338884367169,
+        "train_time_s": 0.4747820543337487,
+        "infer_ms_per_sample": 0.011210265331707584,
+        "ece_mean": 0.17921739276250204
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 0.8914950529855393,
+        "primary_std": 0.0030726430259257922,
+        "train_time_s": 0.49915769266650994,
+        "infer_ms_per_sample": 0.03430494133499451,
+        "ece_mean": 0.056095612168128396
+      },
+      "PatchTST": {
+        "primary_mean": 0.9229503401226445,
+        "primary_std": 0.024440655018702562,
+        "train_time_s": 9.123896223999813,
+        "infer_ms_per_sample": 0.14114568266571345,
+        "ece_mean": 0.11558641203244525
+      },
+      "ModernTCN": {
+        "primary_mean": 0.9249860328771534,
+        "primary_std": 0.005161633188946895,
+        "train_time_s": 12.765823274667127,
+        "infer_ms_per_sample": 0.5431268653337611,
+        "ece_mean": 0.04723516424496968
+      }
+    }
+  },
+  "InsectWingbeatSound": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "AdaSigBoost": {
+        "primary_mean": 0.5853333333333334,
+        "primary_std": 0.02619584360585131,
+        "train_time_s": 11.945380633333116,
+        "infer_ms_per_sample": 3.364758902670777,
+        "ece_mean": 0.10390575848844713
+      },
+      "XGBoost": {
+        "primary_mean": 0.676,
+        "primary_std": 0.011313708498984719,
+        "train_time_s": 5.434943273666552,
+        "infer_ms_per_sample": 0.018207294667566504,
+        "ece_mean": 0.13001501862208045
+      },
+      "LightGBM": {
+        "primary_mean": 0.6693333333333333,
+        "primary_std": 0.01359738536958072,
+        "train_time_s": 2.4663834379989567,
+        "infer_ms_per_sample": 0.023626125332763575,
+        "ece_mean": 0.23889425011498822
+      },
+      "CatBoost": {
+        "primary_mean": 0.6746666666666666,
+        "primary_std": 0.004988876515698593,
+        "train_time_s": 7.349498114999733,
+        "infer_ms_per_sample": 0.007744045336342727,
+        "ece_mean": 0.09321976780924864
+      },
+      "DWT+LightGBM": {
+        "primary_mean": 0.20133333333333334,
+        "primary_std": 0.012364824660660937,
+        "train_time_s": 0.5604022419999334,
+        "infer_ms_per_sample": 0.3471838746627327,
+        "ece_mean": 0.33999034022170543
+      },
+      "VMD+CatBoost": {
+        "primary_mean": 0.4693333333333333,
+        "primary_std": 0.013597385369580746,
+        "train_time_s": 11.170853547999892,
+        "infer_ms_per_sample": 23.959378113334726,
+        "ece_mean": 0.08339699477877334
+      },
+      "MultiRocket+Ridge": {
+        "primary_mean": 0.636,
+        "primary_std": 0.008640987597877155,
+        "train_time_s": 1.0503660159999224,
+        "infer_ms_per_sample": 1.812601586667976,
+        "ece_mean": 0.3698842163171661
+      },
+      "MultiRocket+LightGBM": {
+        "primary_mean": 0.6546666666666666,
+        "primary_std": 0.019686430746977887,
+        "train_time_s": 5.744309429333346,
+        "infer_ms_per_sample": 1.1698569853348697,
+        "ece_mean": 0.24168461887803497
+      },
+      "LearnableFilter+MLP": {
+        "primary_mean": 0.15733333333333335,
+        "primary_std": 0.027390184778898846,
+        "train_time_s": 0.297482736667007,
+        "infer_ms_per_sample": 0.008953143997738758,
+        "ece_mean": 0.021491987228393558
+      },
+      "LearnableFilter+LightGBM": {
+        "primary_mean": 0.22266666666666668,
+        "primary_std": 0.007542472332656513,
+        "train_time_s": 0.5730817633332966,
+        "infer_ms_per_sample": 0.027918126664493077,
+        "ece_mean": 0.2817584759878236
+      },
+      "PatchTST": {
+        "primary_mean": 0.512,
+        "primary_std": 0.008640987597877155,
+        "train_time_s": 5.524813412333363,
+        "infer_ms_per_sample": 0.08710444666454957,
+        "ece_mean": 0.09519599254926046
+      },
+      "ModernTCN": {
+        "primary_mean": 0.45999999999999996,
+        "primary_std": 0.011775681155103787,
+        "train_time_s": 6.814541806666966,
+        "infer_ms_per_sample": 0.26972638666726806,
+        "ece_mean": 0.07530901698271432
+      }
+    }
+  },
+  "_stats": {
+    "friedman_nemenyi": {
+      "friedman_stat": 16.455040871934596,
+      "p_value": 0.12506058531851186,
+      "critical_difference_05": 5.891470784108158,
+      "avg_ranks": {
+        "AdaSigBoost": 5.3125,
+        "XGBoost": 7.3125,
+        "LightGBM": 6.25,
+        "CatBoost": 6.4375,
+        "DWT+LightGBM": 6.5,
+        "VMD+CatBoost": 6.625,
+        "MultiRocket+Ridge": 4.5,
+        "MultiRocket+LightGBM": 5.0625,
+        "LearnableFilter+MLP": 10.5625,
+        "LearnableFilter+LightGBM": 7.0625,
+        "PatchTST": 5.6875,
+        "ModernTCN": 6.6875
+      }
+    },
+    "wilcoxon_holm": [
+      {
+        "baseline": "LearnableFilter+MLP",
+        "mean_diff": 1.8522055551454084,
+        "p_raw": 0.0234375,
+        "p_holm": 0.2578125,
+        "significant_05": false
+      },
+      {
+        "baseline": "XGBoost",
+        "mean_diff": 0.17961337117696197,
+        "p_raw": 0.07421875,
+        "p_holm": 0.7421875,
+        "significant_05": false
+      },
+      {
+        "baseline": "ModernTCN",
+        "mean_diff": 0.2963091055262509,
+        "p_raw": 0.0859375,
+        "p_holm": 0.7734375,
+        "significant_05": false
+      },
+      {
+        "baseline": "DWT+LightGBM",
+        "mean_diff": 0.16898455211011093,
+        "p_raw": 0.109375,
+        "p_holm": 0.875,
+        "significant_05": false
+      },
+      {
+        "baseline": "VMD+CatBoost",
+        "mean_diff": 0.2758336696204783,
+        "p_raw": 0.19140625,
+        "p_holm": 1.0,
+        "significant_05": false
+      },
+      {
+        "baseline": "LightGBM",
+        "mean_diff": 0.11702391002081325,
+        "p_raw": 0.23046875,
+        "p_holm": 1.0,
+        "significant_05": false
+      },
+      {
+        "baseline": "CatBoost",
+        "mean_diff": 0.1834613371804079,
+        "p_raw": 0.2734375,
+        "p_holm": 1.0,
+        "significant_05": false
+      },
+      {
+        "baseline": "LearnableFilter+LightGBM",
+        "mean_diff": 0.019574965527062338,
+        "p_raw": 0.296875,
+        "p_holm": 1.0,
+        "significant_05": false
+      },
+      {
+        "baseline": "PatchTST",
+        "mean_diff": 0.32770589241844805,
+        "p_raw": 0.296875,
+        "p_holm": 1.0,
+        "significant_05": false
+      },
+      {
+        "baseline": "MultiRocket+Ridge",
+        "mean_diff": 0.278983755884883,
+        "p_raw": 0.6015625,
+        "p_holm": 1.0,
+        "significant_05": false
+      },
+      {
+        "baseline": "MultiRocket+LightGBM",
+        "mean_diff": 0.1584421974598435,
+        "p_raw": 0.703125,
+        "p_holm": 1.0,
+        "significant_05": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,82 @@
+[build-system]
+requires = ["scikit-build-core>=0.9", "pybind11>=2.11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "adasigboost"
+version = "0.1.0"
+description = "AdaSigBoost: Task-Driven Adaptive Signal Decomposition with Joint Second-Order Gradient Boosting"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name = "AdaSigBoost Authors" },
+]
+keywords = [
+    "gradient-boosting",
+    "signal-decomposition",
+    "time-series",
+    "gabor-filterbank",
+    "interpretable-ml",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "scikit-learn>=1.3",
+    "torch>=2.0",
+    "PyWavelets>=1.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "pybind11>=2.11",
+    "scikit-build-core>=0.9",
+]
+benchmarks = [
+    "xgboost>=2.0",
+    "lightgbm>=4.0",
+    "optuna>=3.5",
+    "statsmodels>=0.14",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "pandas>=2.0",
+    "PyYAML>=6.0",
+    "tqdm>=4.66",
+    "vmdpy>=0.2",
+    "EMD-signal>=1.5",
+]
+
+[tool.scikit-build]
+cmake.version = ">=3.18"
+wheel.packages = ["adasigboost"]
+build-dir = "build/{wheel_tag}"
+editable.rebuild = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+warn_unused_configs = true

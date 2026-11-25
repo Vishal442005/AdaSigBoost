@@ -1,0 +1,118 @@
+{
+  "snr_20db": {
+    "Full AdaSigBoost": {
+      "rmse_mean": 0.6295238267589849,
+      "rmse_std": 0.010861886747305649,
+      "r2_mean": 0.9326669393760869,
+      "avg_active_modes": 6.204545454545455,
+      "train_time_s": 18.700302700000066
+    },
+    "ABL-1 (Open-Loop Freeze)": {
+      "rmse_mean": 1.2887977671024844,
+      "rmse_std": 0.03331596496166933,
+      "r2_mean": 0.7177489303717279,
+      "avg_active_modes": 7.931818181818182,
+      "train_time_s": 6.946549569000581
+    },
+    "ABL-2 (Uniform Weights)": {
+      "rmse_mean": 0.8512211847971897,
+      "rmse_std": 0.0037066030943488926,
+      "r2_mean": 0.8768551108339179,
+      "avg_active_modes": 8.0,
+      "train_time_s": 22.81784320250017
+    },
+    "ABL-3 (Global Shared Tree)": {
+      "rmse_mean": 0.6431526857459988,
+      "rmse_std": 0.03631770547963575,
+      "r2_mean": 0.9293794518275674,
+      "avg_active_modes": 8.0,
+      "train_time_s": 18.911454689499806
+    },
+    "ABL-4 (No Sparsity \u03bb1=0)": {
+      "rmse_mean": 0.6369849180523895,
+      "rmse_std": 0.011263034973032826,
+      "r2_mean": 0.9310611746076468,
+      "avg_active_modes": 8.0,
+      "train_time_s": 15.285310863000177
+    },
+    "ABL-5 (No Orthogonality \u03b11=0)": {
+      "rmse_mean": 0.623034040261605,
+      "rmse_std": 0.004524225606197363,
+      "r2_mean": 0.9340467610573546,
+      "avg_active_modes": 6.454545454545455,
+      "train_time_s": 13.429952267999397
+    },
+    "ABL-6 (In-Sample Residuals)": {
+      "rmse_mean": 0.6351324035090555,
+      "rmse_std": 0.013343676341158905,
+      "r2_mean": 0.9314587917193282,
+      "avg_active_modes": 6.068181818181818,
+      "train_time_s": 16.38991707399964
+    },
+    "ABL-7 (Energy-Only Block 1)": {
+      "rmse_mean": 0.6932290064005382,
+      "rmse_std": 0.009763659741475805,
+      "r2_mean": 0.918351015547064,
+      "avg_active_modes": 6.386363636363637,
+      "train_time_s": 10.592012217500269
+    }
+  },
+  "snr_5db": {
+    "Full AdaSigBoost": {
+      "rmse_mean": 1.559788178703063,
+      "rmse_std": 0.006655978877879054,
+      "r2_mean": 0.5866068423041402,
+      "avg_active_modes": 7.977272727272727,
+      "train_time_s": 13.99520568800017
+    },
+    "ABL-1 (Open-Loop Freeze)": {
+      "rmse_mean": 2.1263660300322482,
+      "rmse_std": 0.018108026244780362,
+      "r2_mean": 0.2314383391894519,
+      "avg_active_modes": 8.0,
+      "train_time_s": 5.773544116999801
+    },
+    "ABL-2 (Uniform Weights)": {
+      "rmse_mean": 1.609458099196043,
+      "rmse_std": 0.03359302423550459,
+      "r2_mean": 0.5593825667836376,
+      "avg_active_modes": 8.0,
+      "train_time_s": 13.722138481999991
+    },
+    "ABL-3 (Global Shared Tree)": {
+      "rmse_mean": 1.5544385422190814,
+      "rmse_std": 0.04203308555178087,
+      "r2_mean": 0.5888043479472818,
+      "avg_active_modes": 8.0,
+      "train_time_s": 24.424831992500458
+    },
+    "ABL-4 (No Sparsity \u03bb1=0)": {
+      "rmse_mean": 1.593727009991587,
+      "rmse_std": 0.03946346419659086,
+      "r2_mean": 0.5678327177359791,
+      "avg_active_modes": 8.0,
+      "train_time_s": 25.071676452500014
+    },
+    "ABL-5 (No Orthogonality \u03b11=0)": {
+      "rmse_mean": 1.5858026847590372,
+      "rmse_std": 0.014073243986507888,
+      "r2_mean": 0.5725278811872204,
+      "avg_active_modes": 7.977272727272727,
+      "train_time_s": 24.705697604000306
+    },
+    "ABL-6 (In-Sample Residuals)": {
+      "rmse_mean": 1.5669352666003868,
+      "rmse_std": 0.026245469703021218,
+      "r2_mean": 0.5824680185073171,
+      "avg_active_modes": 7.818181818181818,
+      "train_time_s": 28.93156913949997
+    },
+    "ABL-7 (Energy-Only Block 1)": {
+      "rmse_mean": 1.6390645245662,
+      "rmse_std": 0.029503996141097555,
+      "r2_mean": 0.5431086011960706,
+      "avg_active_modes": 8.0,
+      "train_time_s": 25.69635211649984
+    }
+  }
+}

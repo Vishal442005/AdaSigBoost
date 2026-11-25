@@ -1,0 +1,269 @@
+\documentclass[10pt]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{microtype}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,backgrounds}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{assumption}{Assumption}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\inner}[2]{\left\langle #1, #2 \right\rangle}
+
+\title{\textbf{AdaSigBoost: Task-Driven Adaptive Signal Decomposition with Joint Second-Order Gradient Boosting}}
+\author{
+  AdaSigBoost Authors \\
+  \texttt{https://github.com/Vishal442005/AdaSigBoost}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Real-world biomedical, industrial, energy, and acoustic sensor streams manifest as non-stationary superpositions of slow secular trends, frequency-modulated oscillations, localized transient impulses, and colored $1/f^\beta$ noise. Existing signal-to-GBDT pipelines operate as \emph{open-loop}, two-stage workflows: classical transforms (FFT, DWT, EMD, VMD) decompose waveforms blindly via unsupervised energy or bandwidth criteria before boosting begins, permanently discarding low-energy yet high-leverage discriminative transients. We introduce \textbf{AdaSigBoost}, a closed-loop gradient boosting framework that embeds differentiable multi-physics spectral-temporal decomposition, simplex spatial-spectral channel mixing, and dedicated per-signal histogram trees directly inside the second-order functional gradient boosting loop. At each boosting stage $m$, out-of-fold (OOF) Newton pseudo-residuals guide composite Gabor-Morlet, smooth trend, and rational resonance filterbanks initialized at cross-spectral residual peaks; each extracted sub-signal is valued by a coordinate-adjusted C++17/OpenMP histogram tree and weighted via closed-form Elastic-Net / group-sparse soft-thresholding. Theoretically, we prove inner-loop monotonic descent, global geometric convergence, exact active-mode support recovery against high-amplitude distractors, a multi-channel Rademacher generalization bound scaling only logarithmically in candidate mode count $K$, and OOF bias elimination. Empirically, AdaSigBoost outperforms raw GBDTs, static decomposition hybrids, random convolution kernels, and differentiable neural front-ends across controlled SNR sweeps (achieving $R^2 = 0.930$ vs.\ $0.614$ for MultiRocket at $+20$~dB), multi-domain real-world datasets, and systematic ablations, while yielding physically grounded mode attributions.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+Gradient-boosted decision trees (GBDTs) such as XGBoost~\citep{chen2016xgboost}, LightGBM~\citep{ke2017lightgbm}, and CatBoost~\citep{prokhorenkova2018catboost} dominate structured tabular prediction owing to their second-order Newton optimization, invariance to feature scaling, and sample efficiency. However, physical, biomedical, energy, and industrial monitoring systems produce multi-channel continuous waveforms $x_i \in \R^{C \times T}$ alongside static tabular covariates $z_i \in \R^P$. Feeding raw time-indexed ticks directly into GBDTs fails catastrophically whenever discriminative events shift in phase or arrival time, while pooling all decomposed sub-signals into a global tree ensemble prevents clean mode-level attribution.
+
+To bridge waveforms and trees, practitioners rely almost universally on \emph{open-loop two-stage pipelines}: applying Discrete Wavelet Transforms (DWT), Empirical Mode Decomposition (EMD)~\citep{huang1998emd}, or Variational Mode Decomposition (VMD)~\citep{dragomiretskiy2014vmd} as a fixed preprocessing step prior to GBDT training. Because classical transforms optimize signal reconstruction fidelity rather than downstream task loss, two structural failure modes occur: (1) high-amplitude irrelevant oscillations dominate decomposed energy budgets while micro-second fault impacts or cardiac arrhythmia transients carrying $<2\%$ energy are discarded into residual noise, and (2) decomposing waveforms independently of boosting residuals forces every stage to operate on the same static basis.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=0.55cm and 0.65cm,
+    box/.style={draw, rounded corners=3pt, minimum height=0.72cm, align=center, font=\footnotesize, inner sep=4pt},
+    open/.style={box, fill=gray!12},
+    closed/.style={box, fill=blue!8, draw=blue!55!black},
+    arr/.style={-{Stealth[length=2.2mm]}, thick}
+]
+% Top row: Open-Loop
+\node[font=\footnotesize\bfseries, anchor=west] (lbl1) at (-0.2, 1.35) {(a) Conventional Open-Loop Pipeline (Static DWT / EMD / VMD + GBDT)};
+\node[open] (x1) at (0.6, 0.7) {Raw Signal $x_i$};
+\node[open, right=of x1] (vmd) {Unsupervised\\[-1pt]DWT / VMD};
+\node[open, right=of vmd] (feat) {Static Pooled\\[-1pt]Features};
+\node[open, right=of feat] (gbdt) {Global GBDT\\[-1pt]Ensemble};
+\node[open, right=of gbdt] (y1) {Prediction $\hat{y}_i$};
+\draw[arr] (x1) -- (vmd);
+\draw[arr] (vmd) -- (feat);
+\draw[arr] (feat) -- (gbdt);
+\draw[arr] (gbdt) -- (y1);
+\node[font=\scriptsize\itshape, text=red!70!black] at (4.3, 0.08) {No loss gradient feedback; low-energy transients lost};
+
+% Bottom row: Closed-Loop AdaSigBoost
+\node[font=\footnotesize\bfseries, anchor=west, text=blue!60!black] (lbl2) at (-0.2, -0.75) {(b) AdaSigBoost Closed-Loop Framework (Task-Driven Stage $m$)};
+\node[closed] (x2) at (0.6, -1.55) {Signal $x_i$,\\[-1pt]Covariates $z_i$};
+\node[closed, right=of x2] (b1) {\textbf{Block 1:} OOF\\[-1pt]Filterbank $\Theta_m, \mathcal{A}_m$};
+\node[closed, right=of b1] (b2) {\textbf{Block 2:} Mode\\[-1pt]Trees $v_{m,k}(\Phi), v_{m,0}$};
+\node[closed, right=of b2] (b3) {\textbf{Block 3:} Sparse\\[-1pt]Weights $W_m$};
+\node[closed, right=of b3] (upd) {Update $F_m$\\[-1pt]$+\eta \Delta F_m$};
+\draw[arr, draw=blue!65!black] (x2) -- (b1);
+\draw[arr, draw=blue!65!black] (b1) -- (b2);
+\draw[arr, draw=blue!65!black] (b2) -- (b3);
+\draw[arr, draw=blue!65!black] (b3) -- (upd);
+\draw[arr, dashed, draw=blue!70!black] (upd.south) -- ++(0,-0.42) -| node[pos=0.25, below, font=\scriptsize\itshape, text=blue!70!black] {OOF Newton Pseudo-Residuals $r_{i,m}^{(-q)} = -g_{i,m}/h_{i,m}$ \& Spectral Peaks} (b1.south);
+\end{tikzpicture}
+\caption{Architectural contrast between open-loop signal preprocessing and AdaSigBoost's closed-loop residual decomposition inside second-order functional gradient boosting.}
+\label{fig:arch_contrast}
+\end{figure}
+
+Figure~\ref{fig:arch_contrast} illustrates our proposed resolution: \textbf{AdaSigBoost} embeds adaptive spectral-temporal decomposition directly inside the second-order boosting loop. At each boosting iteration $m$, out-of-fold (OOF) Newton pseudo-residuals guide a composite multi-physics filterbank (Gabor-Morlet bandpass, smooth low-pass trend, and sharp rational resonance atoms) equipped with simplex channel mixing. Each extracted mode $s_{i,m,k}$ is evaluated by its own coordinate-adjusted histogram regression tree $v_{m,k}$, and modes are weighted and pruned via closed-form Elastic-Net / group-sparse Newton updates.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+    \item \textbf{Closed-Loop Residual Signal Breakdown:} We formulate a composite multi-physics spectral dictionary with simplex multi-channel mixing initialized at $h$-weighted cross-spectral residual peaks and optimized via $Q$-fold OOF Pearson alignment of differentiable envelope/burst/slope descriptors.
+    \item \textbf{Joint Second-Order Valuation \& Group-Sparse Pruning:} We derive an exact alternating block-coordinate solver unifying coordinate-adjusted C++17/OpenMP histogram trees (Block~2) with closed-form Elastic-Net and 1D secular group soft-thresholding updates (Block~3), pruning uncorrelated distractors to exact zero.
+    \item \textbf{Theoretical Guarantees:} We prove inner-loop monotonic descent (Lemma~\ref{lem:inner}), global geometric convergence under local strong convexity and Weak Edge (Theorem~\ref{thm:conv}), exact active-mode support recovery (Proposition~\ref{prop:supp}), a multi-channel/group-sparse Rademacher bound logarithmic in $K$ (Theorem~\ref{thm:rad}), and OOF bias elimination (Theorem~\ref{thm:oof}).
+    \item \textbf{Open-Source Library \& Multi-Domain Validation:} We release a \texttt{scikit-learn}-compatible C++/Python package passing 100\% of estimator checks and validate superiority across $+20$~dB to $-5$~dB colored-noise sweeps, 8 real-world benchmarks, 7 systematic ablations, and physical fault attribution studies.
+\end{enumerate}
+
+\section{Related Work}
+\label{sec:related}
+Table~\ref{tab:gap_matrix} summarizes how AdaSigBoost differs from four dominant paradigms.
+
+\begin{table}[t]
+\centering
+\caption{Methodological positioning of AdaSigBoost against existing time-series and GBDT paradigms.}
+\label{tab:gap_matrix}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llllll}
+\toprule
+Paradigm & Representatives & Decomposition & Per-Mode Valuation & Weighting & Key Limitation vs.\ AdaSigBoost \\
+\midrule
+Static Transform + GBDT & DWT/EMD/VMD + XGB/LGBM & Open-loop unsupervised & Pooled global trees & Implicit split count & Discards low-energy transients \\
+Neural Front-Ends & SincNet, LEAF & End-to-end neural CNN & MLP / Softmax head & Dense linear/attention & No 2nd-order tree boosting; data-hungry \\
+Deep Time-Series SOTA & PatchTST, TimesNet, ModernTCN & Patch / 2D-FFT / Conv & Deep attention/conv & Dense projections & Weak tabular fusion; black-box \\
+Random Kernels & ROCKET, MultiRocket + Ridge & Fixed random dilations & Linear Ridge / LGBM & Dense $L_2$ ridge & No adaptive residual breakdown \\
+\textbf{AdaSigBoost (Ours)} & \textbf{Proposed Framework} & \textbf{Closed-loop OOF residual} & \textbf{Per-mode hist trees} & \textbf{Exact 2nd-order sparse} & \textbf{Unifies physics, trees, \& proofs} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\paragraph{Static Decomposition + GBDTs.} Wavelets, EMD~\citep{huang1998emd}, and VMD~\citep{dragomiretskiy2014vmd} paired with XGBoost~\citep{chen2016xgboost}, LightGBM~\citep{ke2017lightgbm}, or CatBoost~\citep{prokhorenkova2018catboost} compute features once before training, remaining blind to the task loss.
+\paragraph{Differentiable Filterbanks \& Deep Architectures.} SincNet~\citep{ravanelli2018sincnet} and LEAF~\citep{zeghidour2021leaf} learn parameterized bandpass filters inside neural networks, while PatchTST~\citep{nie2023patchtst}, TimesNet~\citep{wu2023timesnet}, and ModernTCN~\citep{luo2024moderntcn} capture temporal variations via transformers or large-kernel convolutions. Pairing them with GBDTs requires training a surrogate neural model and exporting static representations, breaking joint optimization.
+\paragraph{Random Kernels.} ROCKET~\citep{dempster2020rocket} and MultiRocket~\citep{tan2022multirocket} achieve strong accuracy using thousands of random dilated convolutions, but sacrifice physical mode interpretability and degrade under strong colored noise or scarce labels.
+
+\section{The AdaSigBoost Framework}
+\label{sec:method}
+\subsection{Problem Setup, Composite Multi-Physics Dictionary, and Spatial-Spectral Mixing}
+Consider $\mathcal{D} = \{(x_i, z_i, y_i)\}_{i=1}^N$ with $C$-channel waveforms $x_i \in \R^{C \times T}$, optional tabular covariates $z_i \in \R^P$, and targets $y_i \in \mathcal{Y}$ ($L_{\mathrm{out}} = 1$ for scalar regression or binary classification; $L_{\mathrm{out}} = C_{\mathrm{cls}}$ for multi-class). Let $\inner{u}{v} = \frac{1}{T}\sum_{t=1}^T u_t v_t$ and $\hat{x}_i^{(c)}(\omega) = \mathcal{F}(x_i^{(c)})$ via real FFT.
+
+At boosting stage $m \in \{1, \dots, M\}$, mode $k \in \{1, \dots, K\}$ pairs a unit-$L^2$-normalized spectral atom $H_k(\omega; \theta_{m,k})$ with a simplex channel-mixing vector $a_{m,k} = \mathrm{softmax}(\alpha_{m,k}^{\mathrm{ch}}) \in \Delta^{C-1}$:
+\begin{equation}
+    s_{i,m,k}^{\mathrm{ch}} = \mathcal{F}^{-1}\!\big(H_k(\omega; \theta_{m,k}) \odot \hat{x}_i(\omega)\big) \in \R^{C \times T}, \qquad \bar{s}_{i,m,k} = \sum_{c=1}^C a_{m,k,c} s_{i,m,k}^{(c)} \in \R^T,
+\end{equation}
+yielding exact signal conservation $x_i = \sum_{k=1}^K s_{i,m,k}^{\mathrm{ch}} + \varepsilon_{i,m}$ with $\varepsilon_{i,m} := x_i - \sum_{k=1}^K s_{i,m,k}^{\mathrm{ch}}$. To cover diverse signal physics without boundary ringing, our \emph{composite dictionary} partitions $K$ modes across: (i) smooth Butterworth-style low-pass trend atoms $\tilde{H}_{\mathrm{TR}}(\omega) = (1 + (\omega/\omega_c)^4)^{-1/2}$, (ii) Gabor-Morlet bandpass atoms $\tilde{H}_{\mathrm{GM}}(\omega) = \exp(-\frac{(\omega-\omega_0)^2}{2\sigma^2}) + \exp(-\frac{(\omega+\omega_0)^2}{2\sigma^2})$, and (iii) sharp rational resonance atoms $\tilde{H}_{\mathrm{RAT}}(\omega) = (1 + \frac{(\omega-\omega_0)^2}{\gamma_r^2})^{-1} + (1 + \frac{(\omega+\omega_0)^2}{\gamma_r^2})^{-1}$, each normalized to unit DFT $L^2$ norm so $\norm{s_{i,m,k}^{(c)}}_{L^2} \le \norm{x_i^{(c)}}_{L^2}$.
+
+From each sub-signal, $\Phi(s_{i,m,k}^{\mathrm{ch}}, \bar{s}_{i,m,k}) \in \R^{19}$ extracts shift-invariant descriptors: log energy, energy ratio, signed mean, linear trend slope, Hilbert envelope mean/std/90th-percentile/max/kurtosis/skewness, crest factor, zero-crossing rate, spectral centroid/bandwidth/dominant frequency/phase ($\cos,\sin$), 4-window temporal energy concentration, and cross-channel coherence. The stage-$m$ ensemble update is:
+\begin{equation}
+    F_{m,c}(x_i, z_i) = F_{m-1,c}(x_i, z_i) + \eta \left[ \sum_{k=1}^K W_{m,k,c}\, v_{m,k,c}(\Phi_{i,m,k}) + v_{m,0,c}(z_i) \right].
+\end{equation}
+
+\subsection{Joint Second-Order Objective and 3-Block Alternating Solver}
+Given twice-differentiable convex loss $\ell(y_i, F_i)$ with gradients $g_{i,m,c} = \partial \ell / \partial F_{i,c}$ and diagonal Hessians $h_{i,m,c} = \partial^2 \ell / \partial F_{i,c}^2 \ge 0$, stage $m$ minimizes:
+\begin{equation}
+    J_m(\Theta_m, \mathcal{A}_m, V_m, W_m) = \sum_{i=1}^N \sum_{c=1}^{L_{\mathrm{out}}} \left[ g_{i,m,c}\Delta F_{m,c} + \frac{1}{2} h_{i,m,c} (\Delta F_{m,c})^2 \right] + \Omega_{\mathrm{weight}}(W_m) + \Omega_{\mathrm{decomp}}(\Theta_m, \mathcal{A}_m) + \Omega_{\mathrm{tree}}(V_m),
+    \label{eq:obj}
+\end{equation}
+where $\Omega_{\mathrm{weight}}(W_m) = \lambda_1 \sum_{k=1}^K \norm{W_{m,k,:}}_2 + \frac{\lambda_2}{2}\norm{W_m}_F^2$, $\Omega_{\mathrm{decomp}} = \alpha_1 \sum_{j<k}\frac{1}{N}\sum_i \inner{\bar{s}_{i,m,j}}{\bar{s}_{i,m,k}}^2 + \alpha_2 \sum_k \frac{1}{N}\sum_i \norm{\nabla_t \bar{s}_{i,m,k}}_{L^2}^2$, and $\Omega_{\mathrm{tree}}(V_m) = \sum_{k,c}(\gamma T_{m,k,c} + \frac{\beta}{2}\norm{u_{m,k,c}}_2^2)$.
+
+\paragraph{Block 1 (OOF Residual-Guided Filterbank Optimization).}
+Newly seeded or previously pruned modes initialize at peaks of the $h$-weighted cross-spectral residual density $\mathcal{S}_m(\omega) = \sum_c \abs{\sum_i g_{i,m,c} \frac{1}{C}\sum_j \abs{\hat{x}_i^{(j)}(\omega)}^2}$. Using $Q=5$ stratified/grouped folds $\mathcal{I}_1, \dots, \mathcal{I}_Q$, fold-$q$ sub-signals are generated from $\Theta_m^{(-q)}$ fitted strictly on $\mathcal{D}\setminus\mathcal{I}_q$ by maximizing squared $h$-weighted Pearson correlation between differentiable block-envelope/burst/slope statistics $\tilde{\Phi}(\bar{s}_{i,m,k})$ and Newton pseudo-residuals $r_{i,m,c} = -g_{i,m,c}/(h_{i,m,c} + \epsilon_h)$, penalized by $\Omega_{\mathrm{decomp}}$. Consensus parameters $\bar{\Theta}_m = \frac{1}{Q}\sum_q \Theta_m^{(-q)}$ are stored for test-time inference.
+
+\paragraph{Block 2 (Exact Coordinate-Adjusted Value Trees).}
+Holding $W_m$ fixed, we fit the tabular branch $v_{m,0,c}(z_i)$ first so static covariates explain baseline state, then update each mode tree $v_{m,k,c}$ using exact block-coordinate gradients and Hessians:
+\begin{equation}
+    \tilde{g}_{i,m,k,c} = W_{m,k,c}\!\left(g_{i,m,c} + h_{i,m,c}\Delta F_{m,c}^{(-k)}\right), \qquad \tilde{h}_{i,m,k,c} = h_{i,m,c} W_{m,k,c}^2,
+\end{equation}
+in C++17/OpenMP via 256-bin quantile histograms with smaller-child histogram subtraction.
+
+\paragraph{Block 3 (Closed-Form Elastic-Net \& Group-Sparse Weights).}
+Holding $V_m$ fixed, cyclic coordinate descent computes $\rho_{k,c} = -\sum_i z_{i,k,c}(\tilde{g}_{i,m,c}^{(0)} + h_{i,m,c}\sum_{j\ne k} W_{m,j,c} z_{i,j,c})$ and $\zeta_{k,c} = \sum_i h_{i,m,c} z_{i,k,c}^2 + \lambda_2$. For $L_{\mathrm{out}}=1$, $W_{m,k}^* = S(\rho_k, \lambda_1)/\zeta_k$. For $L_{\mathrm{out}} > 1$, $W_{m,k,:}^* = \mathbf{0}$ iff $\norm{\rho_k}_2 \le \lambda_1$; otherwise $W_{m,k,c}^* = \rho_{k,c}/(\zeta_{k,c} + \lambda_1/\tau_k)$ where $\tau_k > 0$ solves $\sum_c \rho_{k,c}^2 / (\zeta_{k,c}\tau + \lambda_1)^2 = 1$ to $10^{-12}$ via safeguarded Newton-bisection.
+
+\begin{algorithm}[t]
+\caption{AdaSigBoost Training Procedure}
+\label{alg:adasigboost}
+\KwIn{Dataset $\{(x_i, z_i, y_i)\}_{i=1}^N$, stages $M$, modes $K$, shrinkage $\eta$, regularizers $(\lambda_1, \lambda_2, \alpha_1, \alpha_2, \gamma, \beta)$.}
+Initialize $F_0 = \arg\min_c \sum_i \ell(y_i, c)$, cache $\hat{x}_i = \mathrm{rfft}(x_i)$, partition $Q=5$ OOF folds\;
+\For{$m = 1$ \KwTo $M$}{
+    Compute $g_{i,m}, h_{i,m}$ and cross-spectral residual peaks $\mathcal{S}_m(\omega)$\;
+    \textbf{Block 1:} Fit OOF filterbanks $\Theta_m^{(-q)}, \mathcal{A}_m^{(-q)}$ on $\mathcal{D}\setminus\mathcal{I}_q$; extract OOF $s_{i,m,k}$ and descriptors $\Phi_{i,m,k}$\;
+    \For{$t = 1$ \KwTo $T_{\mathrm{in}}$}{
+        \textbf{Block 2:} Fit tabular tree $v_{m,0}$ (if $P>0$) and mode trees $v_{m,k,c}$ using exact $(\tilde{g}_{i,m,k,c}, \tilde{h}_{i,m,k,c})$\;
+        \textbf{Block 3:} Run C++ cyclic coordinate descent with (group) soft-thresholding for $W_m$\;
+    }
+    Prune active modes $\mathcal{A}_m = \{k : \norm{W_{m,k,:}}_2 > 0\}$; stop if $\mathcal{A}_m = \emptyset$ or BIC/MDL triggers\;
+    Update $F_m \leftarrow F_{m-1} + \eta \Delta F_m$\;
+}
+\end{algorithm}
+
+\paragraph{Anti-Overfitting \& Complexity.} AdaSigBoost combines five structural defenses: (1) 5-fold OOF residual fitting, (2) $L_1$/group-sparse mode pruning, (3) mutual incoherence $\alpha_1$, (4) frequency-band dropout $p_{\mathrm{drop}}$, and (5) BIC/MDL early stopping. With cached input FFTs, per-stage complexity is $O(NCKT\log T + T_{\mathrm{in}} K N d_\Phi D + T_{\mathrm{in}} K N L_{\mathrm{out}})$.
+
+\section{Theoretical Analysis}
+\label{sec:theory}
+Full proofs of all results below appear in Appendix~\ref{app:proofs} (and our standalone Theory Note).
+
+\begin{lemma}[Inner-Loop Monotonic Descent]
+\label{lem:inner}
+For fixed $(\Theta_m, \mathcal{A}_m)$, alternating Block~2 tree updates (retaining the prior tree if candidate gain $\le 0$) and Block~3 cyclic group coordinate updates yields $J_m^{(t+1)} \le J_m^{(t)}$ and converges linearly in $W_m$ to the unique Block~3 global optimum~\citep{tseng2001convergence}.
+\end{lemma}
+
+\begin{theorem}[Global Geometric Convergence]
+\label{thm:conv}
+Suppose iterates stay in $\norm{F}_\infty \le B$ where $\mu \mathbf{I} \preceq \nabla_F^2 \ell \preceq L_{\mathrm{sm}}\mathbf{I}$, and the Weak Edge Condition $\norm{P_{\mathcal{V}_m}(r_m)}_h^2 \ge \delta\norm{r_m}_h^2$ ($\delta \in (0,1]$) holds. For $\eta \in (0, \mu/L_{\mathrm{sm}}]$, let $\varepsilon_{\mathrm{reg},m} = \frac{\eta}{N}(\Omega_{\mathrm{weight}}(\tilde{W}_m) + \Omega_{\mathrm{tree}}(V_m))$. Then:
+\[
+    \hat{R}_N(F_m) - \hat{R}_N(F^*) \le \left(1 - \frac{\eta\delta\mu}{L_{\mathrm{sm}}}\right)\!\big(\hat{R}_N(F_{m-1}) - \hat{R}_N(F^*)\big) + \varepsilon_{\mathrm{reg},m}.
+\]
+\end{theorem}
+
+\begin{proposition}[Active-Mode Support Recovery]
+\label{prop:supp}
+In the single-stage linear-tree regime $r_m = Z_{\mathcal{S}} w_{\mathcal{S}}^* + \xi$ with $\lambda_{\min}(\Sigma_{\mathcal{S}\mathcal{S}}) \ge c_{\min}$, mutual incoherence $\norm{\Sigma_{\mathcal{S}^c\mathcal{S}}\Sigma_{\mathcal{S}\mathcal{S}}^{-1}}_\infty \le 1-\vartheta$, and sub-Gaussian noise, setting $\lambda_1 = \frac{3N\sigma_\xi}{\vartheta}\sqrt{\frac{2\log K}{N}}$ guarantees with probability $\ge 1 - 2K^{-1}$ that $w_{m,k}^* = 0$ for all distractors $k \in \mathcal{S}^c$ and $\mathrm{sign}(w_{m,k}^*) = \mathrm{sign}(w_k^*)$ on true modes above threshold.
+\end{proposition}
+
+\begin{theorem}[Multi-Channel \& Group-Sparse Rademacher Bound]
+\label{thm:rad}
+Under row-group budget $\sum_k \norm{W_{m,k,:}}_2 \le B_w$, depth-$D$ trees bounded by $B_v$, and $L_\Phi$-Lipschitz descriptors over $(\theta_{m,k}, \alpha_{m,k}^{\mathrm{ch}}) \in \R^{d_\Psi + C}$, with probability $\ge 1 - \Delta$~\citep{maurer2016vector}:
+\[
+    R(F_M) - \hat{R}_N(F_M) \le O\!\left(L_\ell \eta M L_{\mathrm{out}} B_w B_v \sqrt{\frac{2^D\log(d_\Phi N) + (d_\Psi + C)\log N}{N}} + M_\ell\sqrt{\frac{\log(1/\Delta)}{N}}\right).
+\]
+Crucially, candidate mode count $K$ enters at most logarithmically rather than polynomially.
+\end{theorem}
+
+\begin{theorem}[Out-of-Fold Bias-Variance Reduction]
+\label{thm:oof}
+If sample residuals obey $r_i = r_i^* + \varepsilon_i$ with $\E[\varepsilon_i \mid x_i]=0$, in-sample filter optimization incurs spurious alignment bias $\Omega(\sigma\sqrt{d_\Psi/N})$, whereas $Q$-fold OOF cross-fitting yields $\E[\tilde{\Phi}(x_i; \hat{\theta}^{(-q)})\varepsilon_i \mid \mathcal{D}\setminus\mathcal{I}_q] = 0$ and $O(N^{-1})$ selection variance.
+\end{theorem}
+
+\section{Experiments and Ablations}
+\label{sec:exp}
+
+\subsection{Controlled Colored-Noise Synthetic Ground-Truth Suite}
+We construct a 5-component synthetic benchmark ($1/f^\beta$ colored noise, $\beta=1$) combining: (1) a non-stationary linear-sinusoidal trend ($w_1^*=1.5$), (2) an FM chirp contributing $+3.0$ iff peak envelope $>0.7$, (3) a localized 180~Hz Morlet burst at random arrival time $\tau_i \in [0.2T, 0.8T]$ ($w_3^*=2.5$), and (4--5) two high-amplitude uncorrelated distractor sinusoids (110~Hz and 310~Hz, $w_4^*=w_5^*=0$). Across SNR $\in \{+20, +10, +5, 0, -5\}$~dB (Table~\ref{tab:synthetic_snr} and Figure~\ref{fig:synthetic}), AdaSigBoost substantially outperforms all baselines from $+20$~dB ($R^2 = 0.930$ vs.\ $0.614$ for MultiRocket+Ridge and $0.402$ for LightGBM) down to $0$~dB ($R^2 = 0.200$ vs.\ $0.090$ for XGBoost). Multi-stage Spectral IoU reaches $0.701$ (trend), $0.524$ (chirp), and $0.303$ (localized Morlet transient).
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.48\textwidth]{figures/fig_snr_curve.pdf}
+    \hfill
+    \includegraphics[width=0.48\textwidth]{figures/fig_synthetic_modes.pdf}
+    \caption{Left: Test RMSE across colored $1/f^\beta$ SNR levels ($+20$ to $-5$~dB). Right: Learned sub-signals at stage 0 on a synthetic waveform.}
+    \label{fig:synthetic}
+\end{figure}
+
+\input{tables/tab_synthetic_snr.tex}
+
+\subsection{Multi-Domain Real-World Benchmarks}
+We evaluate across 8 leak-free real-world datasets spanning Cardiology (\texttt{ECG5000}), Neurology (\texttt{eeg\_eyestate} with contiguous block groups; \texttt{Epilepsy} 3-channel IMU), Industrial Prognostics (\texttt{cwru\_bearing} load-disjoint; \texttt{Wafer}), Energy+Tabular (\texttt{etth1\_energy} strict temporal split), and Acoustics/Sensors (\texttt{FordA}, \texttt{InsectWingbeatSound}) against 12 baselines spanning Families A--E. Tables~\ref{tab:real_benchmark}--\ref{tab:stats_sig} and Figure~\ref{fig:cd_pareto} summarize cross-validated performance, Friedman/Nemenyi ranks~\citep{demsar2006statistical}, and accuracy-vs-compute Pareto efficiency.
+
+\input{tables/tab_real_benchmark.tex}
+\input{tables/tab_stats_significance.tex}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.48\textwidth]{figures/fig_cd_diagram.pdf}
+    \hfill
+    \includegraphics[width=0.48\textwidth]{figures/fig_pareto.pdf}
+    \caption{Left: Average ranks and Nemenyi Critical Difference ($p < 0.05$) across the 8-dataset suite. Right: Accuracy-rank vs.\ wall-clock training time Pareto frontier.}
+    \label{fig:cd_pareto}
+\end{figure}
+
+\subsection{Systematic Ablations, Sample Efficiency, and Physical Interpretability}
+Table~\ref{tab:ablations} reports \texttt{ABL-1} through \texttt{ABL-7}. Freezing the filterbank in open-loop mode (\texttt{ABL-1}) increases $+20$~dB RMSE from $0.630$ to $1.289$ (and $+5$~dB RMSE from $1.560$ to $2.126$). Disabling Block~3 Newton weights (\texttt{ABL-2}), $L_1$ sparsity (\texttt{ABL-4}), OOF cross-fitting (\texttt{ABL-6}), or envelope/burst/slope alignment (\texttt{ABL-7}) consistently degrades accuracy or active-mode sparsity. Figure~\ref{fig:case_studies} confirms physically meaningful CWRU bearing sub-signals (100\% load-disjoint accuracy; Mode Deletion AUC $= 0.749$) and strong low-data sample efficiency ($N=100$ AdaSigBoost beats $N=600$ baselines).
+
+\input{tables/tab_ablations.tex}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.48\textwidth]{figures/fig_cwru_modes.pdf}
+    \hfill
+    \includegraphics[width=0.48\textwidth]{figures/fig_low_data.pdf}
+    \caption{Left: Learned CWRU 12~kHz outer-race vibration modes. Right: Low-data learning curve ($N \in [100, 600]$ at $+15$~dB SNR).}
+    \label{fig:case_studies}
+\end{figure}
+
+\section{Limitations and Conclusion}
+AdaSigBoost's FFT filterbank scales as $O(T \log T)$ and is well suited up to $T \sim 10^5$; ultra-long continuous streams ($T > 10^6$) benefit from chunked STFT windowing, and purely discrete non-spectral point processes remain outside continuous spectral bases. Overall, AdaSigBoost closes the open-loop gap between signal processing and second-order gradient boosting, uniting strong theoretical guarantees with sample-efficient, interpretable predictions.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\newpage
+\appendix
+\input{appendix.tex}
+
+\end{document}

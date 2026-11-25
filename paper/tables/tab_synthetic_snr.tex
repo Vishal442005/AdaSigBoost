@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\caption{Synthetic Ground-Truth Test RMSE ($\downarrow$) across Colored $1/f^\beta$ SNR Levels.}
+\label{tab:synthetic_snr}
+\begin{tabular}{lccccc}
+\toprule
+Method & $+20$ dB & $+10$ dB & $+5$ dB & $0$ dB & $-5$ dB \\
+\midrule
+AdaSigBoost & $0.649 \pm 0.054$ & $1.280 \pm 0.030$ & $1.638 \pm 0.036$ & $2.228 \pm 0.151$ & $2.565 \pm 0.099$ \\
+XGBoost (Raw) & $1.967 \pm 0.014$ & $2.126 \pm 0.127$ & $2.224 \pm 0.082$ & $2.373 \pm 0.075$ & $2.497 \pm 0.113$ \\
+LightGBM (Raw) & $1.923 \pm 0.039$ & $2.073 \pm 0.087$ & $2.212 \pm 0.070$ & $2.378 \pm 0.094$ & $2.481 \pm 0.080$ \\
+DWT+LightGBM & $2.011 \pm 0.090$ & $2.162 \pm 0.160$ & $2.487 \pm 0.163$ & $2.551 \pm 0.085$ & $2.622 \pm 0.111$ \\
+MultiRocket+Ridge & $1.545 \pm 0.058$ & $2.180 \pm 0.057$ & $2.868 \pm 0.029$ & $3.469 \pm 0.009$ & $3.974 \pm 0.160$ \\
+LearnableFilter+MLP & $2.354 \pm 0.084$ & $2.394 \pm 0.072$ & $2.511 \pm 0.106$ & $2.574 \pm 0.100$ & $2.603 \pm 0.084$ \\
+\bottomrule
+\end{tabular}
+\end{table}

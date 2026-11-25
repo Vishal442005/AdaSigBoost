@@ -1,0 +1,19 @@
+\begin{table}[t]
+\centering
+\caption{Systematic Ablation Study (ABL-1 through ABL-7) on Synthetic Signal Benchmarks.}
+\label{tab:ablations}
+\begin{tabular}{lccc}
+\toprule
+Variant & $+20$ dB RMSE ($\downarrow$) & $+5$ dB RMSE ($\downarrow$) & Avg Active $K$ \\
+\midrule
+Full AdaSigBoost & $0.630$ & $1.560$ & $7.98$ \\
+ABL-1 (Open-Loop Freeze) & $1.289$ & $2.126$ & $8.00$ \\
+ABL-2 (Uniform Weights) & $0.851$ & $1.609$ & $8.00$ \\
+ABL-3 (Global Shared Tree) & $0.643$ & $1.554$ & $8.00$ \\
+ABL-4 (No Sparsity $\lambda_1=0$) & $0.637$ & $1.594$ & $8.00$ \\
+ABL-5 (No Orthogonality $\alpha_1=0$) & $0.623$ & $1.586$ & $7.98$ \\
+ABL-6 (In-Sample Residuals) & $0.635$ & $1.567$ & $7.82$ \\
+ABL-7 (Energy-Only Block 1) & $0.693$ & $1.639$ & $8.00$ \\
+\bottomrule
+\end{tabular}
+\end{table}

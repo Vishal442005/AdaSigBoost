@@ -1,0 +1,5 @@
+{
+  "AdaSigBoost (Signal + Z)": 3.6520206363038112,
+  "AdaSigBoost (Signal Only)": 11.091132539285946,
+  "LightGBM (Z Only)": 3.022228905641724
+}

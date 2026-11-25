@@ -246,13 +246,16 @@ We evaluate across 8 leak-free real-world datasets spanning Cardiology (\texttt{
 Table~\ref{tab:ablations} reports \texttt{ABL-1} through \texttt{ABL-7}. Freezing the filterbank in open-loop mode (\texttt{ABL-1}) increases $+20$~dB RMSE from $0.630$ to $1.289$ (and $+5$~dB RMSE from $1.560$ to $2.126$). Disabling Block~3 Newton weights (\texttt{ABL-2}), $L_1$ sparsity (\texttt{ABL-4}), OOF cross-fitting (\texttt{ABL-6}), or envelope/burst/slope alignment (\texttt{ABL-7}) consistently degrades accuracy or active-mode sparsity. Figure~\ref{fig:case_studies} confirms physically meaningful CWRU bearing sub-signals (100\% load-disjoint accuracy; Mode Deletion AUC $= 0.749$) and strong low-data sample efficiency ($N=100$ AdaSigBoost beats $N=600$ baselines).
 
 \input{tables/tab_ablations.tex}
+\input{tables/tab_multimodal.tex}
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.48\textwidth]{figures/fig_cwru_modes.pdf}
+    \includegraphics[width=0.32\textwidth]{figures/fig_cwru_modes.pdf}
     \hfill
-    \includegraphics[width=0.48\textwidth]{figures/fig_low_data.pdf}
-    \caption{Left: Learned CWRU 12~kHz outer-race vibration modes. Right: Low-data learning curve ($N \in [100, 600]$ at $+15$~dB SNR).}
+    \includegraphics[width=0.32\textwidth]{figures/fig_ecg_modes.pdf}
+    \hfill
+    \includegraphics[width=0.32\textwidth]{figures/fig_low_data.pdf}
+    \caption{Left: Learned CWRU 12~kHz outer-race vibration modes. Center: Learned clinical \texttt{ECG5000} arrhythmia sub-signals. Right: Low-data learning curve ($N \in [100, 600]$ at $+15$~dB SNR).}
     \label{fig:case_studies}
 \end{figure}
 

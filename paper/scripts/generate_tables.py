@@ -129,6 +129,27 @@ def generate_stats_table(json_path: Path, out_tex: Path) -> None:
     out_tex.write_text("\n".join(lines) + "\n")
 
 
+def generate_multimodal_table(json_path: Path, out_tex: Path) -> None:
+    if not json_path.exists():
+        return
+    data = json.loads(json_path.read_text())
+    lines = [
+        r"\begin{table}[t]",
+        r"\centering",
+        r"\caption{Multimodal Signal + Tabular Covariate Fusion on \texttt{etth1\_energy} (24h Forecast MAE $\downarrow$).}",
+        r"\label{tab:multimodal}",
+        r"\begin{tabular}{lc}",
+        r"\toprule",
+        r"Input Modality & Test MAE ($\downarrow$) \\",
+        r"\midrule",
+    ]
+    for name, val in data.items():
+        lines.append(f"{name} & ${val:.4f}$ " + r"\\")
+    lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}"])
+    out_tex.parent.mkdir(parents=True, exist_ok=True)
+    out_tex.write_text("\n".join(lines) + "\n")
+
+
 def main() -> None:
     results_dir = Path("results")
     tables_dir = Path("paper/tables")
@@ -136,6 +157,7 @@ def main() -> None:
     generate_ablation_table(results_dir / "ablations.json", tables_dir / "tab_ablations.tex")
     generate_real_table(results_dir / "real_benchmark.json", tables_dir / "tab_real_benchmark.tex")
     generate_stats_table(results_dir / "real_benchmark.json", tables_dir / "tab_stats_significance.tex")
+    generate_multimodal_table(results_dir / "multimodal_ablation.json", tables_dir / "tab_multimodal.tex")
 
 
 if __name__ == "__main__":

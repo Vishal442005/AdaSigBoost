@@ -1,0 +1,56 @@
+{
+  "test_accuracy": 0.9266666666666666,
+  "mode_deletion_auc": {
+    "deletion_scores": [
+      0.9266666666666666,
+      0.9266666666666666,
+      0.9033333333333333,
+      0.8633333333333333,
+      0.8033333333333333,
+      0.7466666666666667,
+      0.59
+    ],
+    "deletion_auc": 0.8336111111111112,
+    "mode_order": [
+      2,
+      3,
+      0,
+      4,
+      5,
+      1
+    ],
+    "n_modes": 6
+  },
+  "mode_summary": {
+    "0": {
+      "cum_weight_norm": 17.437816194959616,
+      "weighted_freq_hz": 2.756824051477812,
+      "active_stages": 23
+    },
+    "1": {
+      "cum_weight_norm": 12.186600599071665,
+      "weighted_freq_hz": 25.515121132574855,
+      "active_stages": 21
+    },
+    "2": {
+      "cum_weight_norm": 21.17402521373915,
+      "weighted_freq_hz": 8.461357389618447,
+      "active_stages": 24
+    },
+    "3": {
+      "cum_weight_norm": 22.253774518151175,
+      "weighted_freq_hz": 8.967206134853763,
+      "active_stages": 24
+    },
+    "4": {
+      "cum_weight_norm": 15.711894308151338,
+      "weighted_freq_hz": 47.95902151543923,
+      "active_stages": 17
+    },
+    "5": {
+      "cum_weight_norm": 17.162449740885197,
+      "weighted_freq_hz": 64.333113772969,
+      "active_stages": 18
+    }
+  }
+}

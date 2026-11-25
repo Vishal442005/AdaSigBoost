@@ -59,3 +59,11 @@ Dataset & Domain & Channels ($C$) & Length ($T$) & Metric & Leakage Defense \\
 \section{Compute Transparency and Reproducibility Checklist}
 \label{app:compute}
 All CPU experiments were executed deterministically on a 10-core/12-thread Intel Core i5-1335U (15~GiB RAM) using Python~3.10, PyTorch~2.14.0+cpu, and C++17/OpenMP. Full reproduction commands are automated via \texttt{benchmarks/reproduce\_all.py} and verified by CI (\texttt{ruff}, \texttt{mypy}, and 119 \texttt{pytest} checks including \texttt{sklearn.utils.estimator\_checks.check\_estimator}).
+
+\section{NeurIPS / ICML Reproducibility Checklist}
+\label{app:checklist}
+\begin{itemize}
+    \item \textbf{Claims \& Theory:} All theoretical claims (Lemma~1, Theorems~1--3, Proposition~1) state explicit assumptions (bounded iterates, local smoothness/strong convexity, Weak Edge, mutual incoherence) and include full proofs in Section~\ref{sec:theory}, Appendix~\ref{app:proofs}, and \texttt{docs/theory/AdaSigBoost\_Theory\_Note.tex}.
+    \item \textbf{Code \& Data Availability:} Complete source code, C++17/OpenMP build files, synthetic generator, leak-free dataset loaders, and figure/table generation scripts are publicly hosted at \texttt{https://github.com/Vishal442005/AdaSigBoost} under the MIT License.
+    \item \textbf{Experimental Rigor:} Statistical dispersion ($\text{mean} \pm \text{std}$), Friedman/Nemenyi rank tests, Holm-Bonferroni Wilcoxon $p$-values, ECE calibration metrics, wall-clock runtimes, and leakage defenses (Table~\ref{tab:datasets_audit}) are reported transparently.
+\end{itemize}

@@ -142,6 +142,117 @@ def run_low_data_curve(
     return out
 
 
+def run_ecg_case_study(
+    output_dir: Path = Path("results"),
+    fig_dir: Path = Path("paper/figures"),
+) -> dict[str, Any]:
+    """Train AdaSigBoost on ECG5000 arrhythmia beats & compute clinical mode deletion AUC."""
+    from sklearn.model_selection import StratifiedShuffleSplit
+
+    ds = load_benchmark_dataset("ECG5000")
+    splitter = StratifiedShuffleSplit(n_splits=1, test_size=0.25, random_state=42)
+    tr_idx, te_idx = next(splitter.split(ds.X, ds.y))
+    tr_idx = tr_idx[:800]
+    te_idx = te_idx[:300]
+
+    clf = AdaSigBoostClassifier(
+        n_estimators=24,
+        n_modes=6,
+        learning_rate=0.16,
+        max_depth=4,
+        lambda1=0.8,
+        n_filter_steps=6,
+        use_bic_stopping=False,
+        random_state=42,
+    )
+    clf.fit(ds.X[tr_idx], ds.y[tr_idx])
+    acc = float(accuracy_score(ds.y[te_idx], clf.predict(ds.X[te_idx])))
+
+    del_res = compute_mode_deletion_auc(
+        clf,
+        ds.X[te_idx],
+        ds.y[te_idx],
+        metric_fn=lambda yt, F: accuracy_score(yt, np.argmax(F, axis=1)),
+    )
+    # Plot abnormal class sample (label != 0)
+    abn_candidates = np.flatnonzero(ds.y[te_idx] != 0)
+    abn_idx = int(abn_candidates[0]) if len(abn_candidates) > 0 else 0
+    plot_mode_decomposition(
+        clf,
+        ds.X[te_idx][abn_idx],
+        fs=140.0,
+        stage_idx=0,
+        save_path=fig_dir / "fig_ecg_modes.pdf",
+    )
+
+    out = {
+        "test_accuracy": acc,
+        "mode_deletion_auc": del_res,
+        "mode_summary": {str(k): v for k, v in summarize_stage_modes(clf, fs=140.0).items()},
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "ecg_case_study.json").write_text(json.dumps(out, indent=2))
+    print(f"[ECG5000 Case Study] Acc={acc:.4f}, Deletion AUC={del_res['deletion_auc']:.4f}", flush=True)
+    return out
+
+
+def run_multimodal_ablation(
+    output_dir: Path = Path("results"),
+) -> dict[str, Any]:
+    """Compare Signal+Tabular vs Signal-Only vs Tabular-Only on etth1_energy."""
+    from sklearn.metrics import mean_absolute_error
+
+    ds = load_benchmark_dataset("etth1_energy")
+    assert ds.Z is not None
+    N = 900
+    tr_idx = np.arange(0, 600)
+    te_idx = np.arange(600, N)
+
+    m_both = AdaSigBoostRegressor(
+        n_estimators=35,
+        n_modes=6,
+        learning_rate=0.15,
+        max_depth=4,
+        lambda1=1.0,
+        n_filter_steps=6,
+        use_bic_stopping=False,
+        random_state=42,
+    )
+    m_both.fit(ds.X[tr_idx], ds.y[tr_idx], Z=ds.Z[tr_idx])
+    mae_both = float(mean_absolute_error(ds.y[te_idx], m_both.predict(ds.X[te_idx], Z=ds.Z[te_idx])))
+
+    m_sig = AdaSigBoostRegressor(
+        n_estimators=35,
+        n_modes=6,
+        learning_rate=0.15,
+        max_depth=4,
+        lambda1=1.0,
+        n_filter_steps=6,
+        use_bic_stopping=False,
+        random_state=42,
+    )
+    m_sig.fit(ds.X[tr_idx], ds.y[tr_idx])
+    mae_sig = float(mean_absolute_error(ds.y[te_idx], m_sig.predict(ds.X[te_idx])))
+
+    import lightgbm as lgb
+
+    m_tab = lgb.LGBMRegressor(n_estimators=100, max_depth=4, verbose=-1, random_state=42)
+    m_tab.fit(ds.Z[tr_idx], ds.y[tr_idx])
+    mae_tab = float(mean_absolute_error(ds.y[te_idx], m_tab.predict(ds.Z[te_idx])))
+
+    out = {
+        "AdaSigBoost (Signal + Z)": mae_both,
+        "AdaSigBoost (Signal Only)": mae_sig,
+        "LightGBM (Z Only)": mae_tab,
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "multimodal_ablation.json").write_text(json.dumps(out, indent=2))
+    print(f"[Multimodal etth1] Signal+Z={mae_both:.4f} | Signal-Only={mae_sig:.4f} | Z-Only={mae_tab:.4f}", flush=True)
+    return out
+
+
 if __name__ == "__main__":
     run_cwru_case_study()
+    run_ecg_case_study()
+    run_multimodal_ablation()
     run_low_data_curve()

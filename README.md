@@ -3,6 +3,7 @@
 **Task-Driven Adaptive Signal Decomposition with Joint Second-Order Gradient Boosting**
 
 [![CI](https://github.com/Vishal442005/AdaSigBoost/actions/workflows/ci.yml/badge.svg)](https://github.com/Vishal442005/AdaSigBoost/actions/workflows/ci.yml)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Vishal442005/AdaSigBoost/blob/main/notebooks/AdaSigBoost_GPU_Colab.ipynb)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 AdaSigBoost embeds differentiable multi-physics spectral-temporal decomposition directly inside the second-order functional gradient boosting loop. Instead of relying on open-loop unsupervised preprocessing (FFT, DWT, EMD, VMD), each boosting stage:

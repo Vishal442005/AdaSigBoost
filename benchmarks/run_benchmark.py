@@ -211,6 +211,22 @@ def _build_model(model_name: str, ds: BenchmarkDataset, params: dict[str, Any], 
             task=task_kind,
             seed=seed,
         )
+    if model_name == "TimesNet":
+        return DeepTimeSeriesBaseline(
+            arch="timesnet",
+            epochs=20,
+            lr=params.get("lr", 3e-3),
+            task=task_kind,
+            seed=seed,
+        )
+    if model_name == "iTransformer":
+        return DeepTimeSeriesBaseline(
+            arch="itransformer",
+            epochs=20,
+            lr=params.get("lr", 3e-3),
+            task=task_kind,
+            seed=seed,
+        )
     raise ValueError(f"Unknown model: {model_name}")
 
 
@@ -307,7 +323,14 @@ def run_benchmark(
                             }
                         elif _m == "MultiRocket+Ridge":
                             p = {"alpha": trial.suggest_float("alpha", 0.1, 100.0, log=True)}
-                        elif _m in {"LearnableFilter+MLP", "LearnableFilter+LightGBM", "PatchTST", "ModernTCN"}:
+                        elif _m in {
+                            "LearnableFilter+MLP",
+                            "LearnableFilter+LightGBM",
+                            "PatchTST",
+                            "ModernTCN",
+                            "TimesNet",
+                            "iTransformer",
+                        }:
                             p = {"lr": trial.suggest_float("lr", 1e-3, 3e-2, log=True)}
 
                         cut = max(10, int(0.8 * len(_yt)))

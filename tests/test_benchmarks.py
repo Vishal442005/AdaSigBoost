@@ -51,3 +51,16 @@ def test_expected_calibration_error() -> None:
     cal = expected_calibration_error(y, p_perfect)
     assert cal["ece"] < 1e-9
     assert cal["brier"] < 1e-9
+
+
+def test_family_e_deep_baselines_smoke() -> None:
+    from benchmarks.baselines import DeepTimeSeriesBaseline
+
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(16, 2, 32))
+    y = np.array([0, 1] * 8)
+    for arch in ("patchtst", "moderntcn", "timesnet", "itransformer"):
+        mdl = DeepTimeSeriesBaseline(arch=arch, epochs=2, task="classification", seed=0).fit(X, y)
+        probs = mdl.predict_proba(X)
+        assert probs.shape == (16, 2)
+        assert mdl.predict(X).shape == (16,)

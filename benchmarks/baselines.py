@@ -334,11 +334,12 @@ class LearnableFilterNeuralBaseline:
 
     def fit(self, X: np.ndarray, y: np.ndarray, Z: np.ndarray | None = None) -> LearnableFilterNeuralBaseline:
         torch.manual_seed(self.seed)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         X_3d = X[:, np.newaxis, :] if X.ndim == 2 else X
-        X_t = torch.tensor(X_3d, dtype=torch.float32)
+        X_t = torch.tensor(X_3d, dtype=torch.float32, device=device)
         if self.task == "regression":
             n_out = 1
-            y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1)
+            y_t = torch.tensor(y, dtype=torch.float32, device=device).unsqueeze(-1)
             loss_fn: nn.Module = nn.MSELoss()
             self.n_classes_ = 1
         else:
@@ -346,14 +347,16 @@ class LearnableFilterNeuralBaseline:
             self.n_classes_ = len(classes)
             if self.n_classes_ <= 2:
                 n_out = 1
-                y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1)
+                y_t = torch.tensor(y, dtype=torch.float32, device=device).unsqueeze(-1)
                 loss_fn = nn.BCEWithLogitsLoss()
             else:
                 n_out = self.n_classes_
-                y_t = torch.tensor(y, dtype=torch.long)
+                y_t = torch.tensor(y, dtype=torch.long, device=device)
                 loss_fn = nn.CrossEntropyLoss()
 
-        self.net = _SimpleLearnableFilterNet(X_3d.shape[-1], n_filters=self.n_filters, n_outputs=n_out)
+        self.net = _SimpleLearnableFilterNet(
+            X_3d.shape[-1], n_filters=self.n_filters, n_outputs=n_out
+        ).to(device)
         opt = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         self.net.train()
         for _ in range(self.epochs):
@@ -366,7 +369,7 @@ class LearnableFilterNeuralBaseline:
         if self.head == "lightgbm":
             self.net.eval()
             with torch.no_grad():
-                feats = self.net.extract_features(X_t).numpy()
+                feats = self.net.extract_features(X_t).cpu().numpy()
             if Z is not None:
                 feats = np.hstack([feats, Z])
             cls = lgb.LGBMRegressor if self.task == "regression" else lgb.LGBMClassifier
@@ -377,9 +380,10 @@ class LearnableFilterNeuralBaseline:
     def _export_feats(self, X: np.ndarray, Z: np.ndarray | None) -> np.ndarray:
         assert self.net is not None
         self.net.eval()
+        device = next(self.net.parameters()).device
         X_3d = X[:, np.newaxis, :] if X.ndim == 2 else X
         with torch.no_grad():
-            feats = self.net.extract_features(torch.tensor(X_3d, dtype=torch.float32)).numpy()
+            feats = self.net.extract_features(torch.tensor(X_3d, dtype=torch.float32, device=device)).cpu().numpy()
         if Z is not None:
             feats = np.hstack([feats, Z])
         return feats
@@ -389,9 +393,10 @@ class LearnableFilterNeuralBaseline:
             return self.gbdt_head.predict_proba(self._export_feats(X, Z))
         assert self.net is not None
         self.net.eval()
+        device = next(self.net.parameters()).device
         X_3d = X[:, np.newaxis, :] if X.ndim == 2 else X
         with torch.no_grad():
-            logits = self.net(torch.tensor(X_3d, dtype=torch.float32))
+            logits = self.net(torch.tensor(X_3d, dtype=torch.float32, device=device)).cpu()
             if self.n_classes_ <= 2:
                 p1 = torch.sigmoid(logits.squeeze(-1)).numpy()
                 return np.column_stack([1.0 - p1, p1])
@@ -402,9 +407,10 @@ class LearnableFilterNeuralBaseline:
             return np.asarray(self.gbdt_head.predict(self._export_feats(X, Z))).ravel()
         assert self.net is not None
         self.net.eval()
+        device = next(self.net.parameters()).device
         X_3d = X[:, np.newaxis, :] if X.ndim == 2 else X
         with torch.no_grad():
-            out = self.net(torch.tensor(X_3d, dtype=torch.float32))
+            out = self.net(torch.tensor(X_3d, dtype=torch.float32, device=device)).cpu()
         if self.task == "regression":
             return out.squeeze(-1).numpy()
         if self.n_classes_ <= 2:
@@ -478,8 +484,59 @@ class _ModernTCNBackbone(nn.Module):
         return self.head(pooled)
 
 
+class _TimesNetBackbone(nn.Module):
+    """Family E: Compact TimesNet-style FFT period-folding + 2D Inception temporal block."""
+
+    def __init__(self, n_channels: int, n_outputs: int, n_tabular: int = 0, d_model: int = 32) -> None:
+        super().__init__()
+        self.stem = nn.Conv1d(n_channels, d_model, kernel_size=3, padding=1)
+        self.conv2d_a = nn.Conv2d(d_model, d_model, kernel_size=(3, 3), padding=1)
+        self.conv2d_b = nn.Conv2d(d_model, d_model, kernel_size=(5, 5), padding=2)
+        self.act = nn.GELU()
+        self.head = nn.Linear(2 * d_model + n_tabular, n_outputs)
+
+    def forward(self, x: torch.Tensor, z: torch.Tensor | None = None) -> torch.Tensor:
+        h = self.stem(x)  # (N, D, T)
+        N, D, T = h.shape
+        # Fold 1D features along dominant empirical periods
+        periods = [max(4, min(T // 2, 16)), max(4, min(T // 3, 24))]
+        accum = h
+        for p in periods:
+            pad = (p - (T % p)) % p
+            hp = nn.functional.pad(h, (0, pad)) if pad > 0 else h
+            cols = hp.shape[-1] // p
+            h2d = hp.view(N, D, cols, p)
+            y2d = 0.5 * (self.act(self.conv2d_a(h2d)) + self.act(self.conv2d_b(h2d)))
+            accum = accum + y2d.reshape(N, D, cols * p)[:, :, :T]
+        pooled = torch.cat([accum.mean(dim=-1), accum.max(dim=-1).values], dim=-1)
+        if z is not None:
+            pooled = torch.cat([pooled, z], dim=-1)
+        return self.head(pooled)
+
+
+class _iTransformerBackbone(nn.Module):
+    """Family E: Compact iTransformer inverted variate-token attention encoder."""
+
+    def __init__(self, n_channels: int, signal_length: int, n_outputs: int, n_tabular: int = 0, d_model: int = 48) -> None:
+        super().__init__()
+        self.variate_proj = nn.Linear(signal_length, d_model)
+        enc_layer = nn.TransformerEncoderLayer(
+            d_model=d_model, nhead=4, dim_feedforward=96, dropout=0.1, batch_first=True
+        )
+        self.encoder = nn.TransformerEncoder(enc_layer, num_layers=2)
+        self.head = nn.Linear(n_channels * d_model + n_tabular, n_outputs)
+
+    def forward(self, x: torch.Tensor, z: torch.Tensor | None = None) -> torch.Tensor:
+        N, C, _ = x.shape
+        tok = self.variate_proj(x)  # (N, C, d_model)
+        enc = self.encoder(tok).reshape(N, C * tok.shape[-1])
+        if z is not None:
+            enc = torch.cat([enc, z], dim=-1)
+        return self.head(enc)
+
+
 class DeepTimeSeriesBaseline:
-    """Family E: PyTorch PatchTST and ModernTCN baselines with tabular covariate support."""
+    """Family E: PyTorch PatchTST, ModernTCN, TimesNet, and iTransformer baselines (CUDA-aware)."""
 
     def __init__(
         self,
@@ -500,17 +557,18 @@ class DeepTimeSeriesBaseline:
         self.scaler_x = StandardScaler()
         self.scaler_z = StandardScaler()
         self.n_classes_ = 1
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def _prep_inputs(self, X: np.ndarray, Z: np.ndarray | None, fit: bool) -> tuple[torch.Tensor, torch.Tensor | None]:
         X_3d = X[:, np.newaxis, :] if X.ndim == 2 else X
         N, C, T = X_3d.shape
         flat = X_3d.reshape(N, -1)
         scaled = self.scaler_x.fit_transform(flat) if fit else self.scaler_x.transform(flat)
-        X_t = torch.tensor(scaled.reshape(N, C, T), dtype=torch.float32)
+        X_t = torch.tensor(scaled.reshape(N, C, T), dtype=torch.float32, device=self.device)
         Z_t = None
         if Z is not None:
             zs = self.scaler_z.fit_transform(Z) if fit else self.scaler_z.transform(Z)
-            Z_t = torch.tensor(zs, dtype=torch.float32)
+            Z_t = torch.tensor(zs, dtype=torch.float32, device=self.device)
         return X_t, Z_t
 
     def fit(self, X: np.ndarray, y: np.ndarray, Z: np.ndarray | None = None) -> DeepTimeSeriesBaseline:
@@ -521,26 +579,31 @@ class DeepTimeSeriesBaseline:
 
         if self.task == "regression":
             n_out = 1
-            y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1)
+            y_t = torch.tensor(y, dtype=torch.float32, device=self.device).unsqueeze(-1)
             loss_fn: nn.Module = nn.MSELoss()
             self.n_classes_ = 1
         else:
             self.n_classes_ = len(np.unique(y))
             if self.n_classes_ <= 2:
                 n_out = 1
-                y_t = torch.tensor(y, dtype=torch.float32).unsqueeze(-1)
+                y_t = torch.tensor(y, dtype=torch.float32, device=self.device).unsqueeze(-1)
                 loss_fn = nn.BCEWithLogitsLoss()
             else:
                 n_out = self.n_classes_
-                y_t = torch.tensor(y, dtype=torch.long)
+                y_t = torch.tensor(y, dtype=torch.long, device=self.device)
                 loss_fn = nn.CrossEntropyLoss()
 
         if self.arch == "patchtst":
             self.net = _PatchTSTBackbone(C, T, n_out, n_tabular=n_tab)
         elif self.arch == "moderntcn":
             self.net = _ModernTCNBackbone(C, n_out, n_tabular=n_tab)
+        elif self.arch == "timesnet":
+            self.net = _TimesNetBackbone(C, n_out, n_tabular=n_tab)
+        elif self.arch == "itransformer":
+            self.net = _iTransformerBackbone(C, T, n_out, n_tabular=n_tab)
         else:
             raise ValueError(f"Unknown deep arch: {self.arch}")
+        self.net = self.net.to(self.device)
 
         opt = torch.optim.AdamW(self.net.parameters(), lr=self.lr, weight_decay=1e-4)
         self.net.train()
@@ -562,7 +625,7 @@ class DeepTimeSeriesBaseline:
         self.net.eval()
         X_t, Z_t = self._prep_inputs(X, Z, fit=False)
         with torch.no_grad():
-            logits = self.net(X_t, Z_t)
+            logits = self.net(X_t, Z_t).cpu()
             if self.n_classes_ <= 2:
                 p1 = torch.sigmoid(logits.squeeze(-1)).numpy()
                 return np.column_stack([1.0 - p1, p1])
@@ -573,7 +636,7 @@ class DeepTimeSeriesBaseline:
         self.net.eval()
         X_t, Z_t = self._prep_inputs(X, Z, fit=False)
         with torch.no_grad():
-            out = self.net(X_t, Z_t)
+            out = self.net(X_t, Z_t).cpu()
         if self.task == "regression":
             return out.squeeze(-1).numpy()
         if self.n_classes_ <= 2:

@@ -1,0 +1,158 @@
+{
+  "ECG5000": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 0.9226666666666667,
+        "primary_std": 0.0037712361663282566,
+        "train_time_s": 0.657573435666715,
+        "infer_ms_per_sample": 0.055990110666546876
+      },
+      "iTransformer": {
+        "primary_mean": 0.9186666666666667,
+        "primary_std": 0.01236482466066095,
+        "train_time_s": 0.9928572400000727,
+        "infer_ms_per_sample": 0.007902186667100372
+      }
+    }
+  },
+  "eeg_eyestate": {
+    "metric": "auroc",
+    "task": "binary",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 0.9484126984126985,
+        "primary_std": 0.07295546155099301,
+        "train_time_s": 0.1431049576666131,
+        "infer_ms_per_sample": 0.05980551308335064,
+        "ece_mean": 0.052240272182406795
+      },
+      "iTransformer": {
+        "primary_mean": 0.876984126984127,
+        "primary_std": 0.13410115276758572,
+        "train_time_s": 0.2611993166665343,
+        "infer_ms_per_sample": 0.04632465298351487,
+        "ece_mean": 0.025008059029627307
+      }
+    }
+  },
+  "Epilepsy": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 0.9561634018155757,
+        "primary_std": 0.03918852971118185,
+        "train_time_s": 0.2633055173333408,
+        "infer_ms_per_sample": 0.03248507947174129,
+        "ece_mean": 0.04108254588947001
+      },
+      "iTransformer": {
+        "primary_mean": 0.6872909698996654,
+        "primary_std": 0.03567664778751283,
+        "train_time_s": 0.3695535496666859,
+        "infer_ms_per_sample": 0.022248061155829002,
+        "ece_mean": 0.19637284123284326
+      }
+    }
+  },
+  "cwru_bearing": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 1.0,
+        "primary_std": 0.0,
+        "train_time_s": 1.3735550259999627,
+        "infer_ms_per_sample": 0.06515083698039792,
+        "ece_mean": 0.0015458464622497559
+      },
+      "iTransformer": {
+        "primary_mean": 0.6519042627533194,
+        "primary_std": 0.07957721872816215,
+        "train_time_s": 0.697119493500054,
+        "infer_ms_per_sample": 0.01116463532935217,
+        "ece_mean": 0.3042686188568776
+      }
+    }
+  },
+  "Wafer": {
+    "metric": "auroc",
+    "task": "binary",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 0.9949712643678161,
+        "primary_std": 0.0035248087748754285,
+        "train_time_s": 0.7347130366667898,
+        "infer_ms_per_sample": 0.019316688000193,
+        "ece_mean": 0.01343024897575377
+      },
+      "iTransformer": {
+        "primary_mean": 0.9976851851851851,
+        "primary_std": 0.0017741148444199214,
+        "train_time_s": 0.9623679996667155,
+        "infer_ms_per_sample": 0.008096087999547308,
+        "ece_mean": 0.008467479070027671
+      }
+    }
+  },
+  "etth1_energy": {
+    "metric": "mae",
+    "task": "regression",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 7.1515573415810065,
+        "primary_std": 2.3752387748499393,
+        "train_time_s": 0.5102517963332502,
+        "infer_ms_per_sample": 0.026145203208267995
+      },
+      "iTransformer": {
+        "primary_mean": 8.331873538730688,
+        "primary_std": 2.252878413076257,
+        "train_time_s": 0.9194585813333257,
+        "infer_ms_per_sample": 0.01955140285226759
+      }
+    }
+  },
+  "FordA": {
+    "metric": "auroc",
+    "task": "binary",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 0.9551850838848726,
+        "primary_std": 0.0115184916188894,
+        "train_time_s": 1.0886086399999992,
+        "infer_ms_per_sample": 0.0368205226665547,
+        "ece_mean": 0.03500136963526408
+      },
+      "iTransformer": {
+        "primary_mean": 0.7241894674505668,
+        "primary_std": 0.008867389591312976,
+        "train_time_s": 1.025574691666634,
+        "infer_ms_per_sample": 0.013149312000071708,
+        "ece_mean": 0.24769260843594867
+      }
+    }
+  },
+  "InsectWingbeatSound": {
+    "metric": "accuracy",
+    "task": "multiclass",
+    "models": {
+      "TimesNet": {
+        "primary_mean": 0.5613333333333334,
+        "primary_std": 0.013199326582148849,
+        "train_time_s": 0.7351773556666407,
+        "infer_ms_per_sample": 0.01955781600008777,
+        "ece_mean": 0.07998199905951818
+      },
+      "iTransformer": {
+        "primary_mean": 0.624,
+        "primary_std": 0.021416504538945363,
+        "train_time_s": 0.887532072333291,
+        "infer_ms_per_sample": 0.00843337733355535,
+        "ece_mean": 0.15818613652388255
+      }
+    }
+  }
+}

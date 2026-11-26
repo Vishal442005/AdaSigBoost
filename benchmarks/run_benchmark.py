@@ -198,7 +198,8 @@ def _build_model(model_name: str, ds: BenchmarkDataset, params: dict[str, Any], 
     if model_name == "PatchTST":
         return DeepTimeSeriesBaseline(
             arch="patchtst",
-            epochs=20,
+            epochs=params.get("epochs", 20),
+            batch_size=params.get("batch_size", 64),
             lr=params.get("lr", 3e-3),
             task=task_kind,
             seed=seed,
@@ -206,7 +207,8 @@ def _build_model(model_name: str, ds: BenchmarkDataset, params: dict[str, Any], 
     if model_name == "ModernTCN":
         return DeepTimeSeriesBaseline(
             arch="moderntcn",
-            epochs=20,
+            epochs=params.get("epochs", 20),
+            batch_size=params.get("batch_size", 64),
             lr=params.get("lr", 3e-3),
             task=task_kind,
             seed=seed,
@@ -214,7 +216,8 @@ def _build_model(model_name: str, ds: BenchmarkDataset, params: dict[str, Any], 
     if model_name == "TimesNet":
         return DeepTimeSeriesBaseline(
             arch="timesnet",
-            epochs=20,
+            epochs=params.get("epochs", 20),
+            batch_size=params.get("batch_size", 64),
             lr=params.get("lr", 3e-3),
             task=task_kind,
             seed=seed,
@@ -222,7 +225,8 @@ def _build_model(model_name: str, ds: BenchmarkDataset, params: dict[str, Any], 
     if model_name == "iTransformer":
         return DeepTimeSeriesBaseline(
             arch="itransformer",
-            epochs=20,
+            epochs=params.get("epochs", 20),
+            batch_size=params.get("batch_size", 64),
             lr=params.get("lr", 3e-3),
             task=task_kind,
             seed=seed,
@@ -331,7 +335,11 @@ def run_benchmark(
                             "TimesNet",
                             "iTransformer",
                         }:
-                            p = {"lr": trial.suggest_float("lr", 1e-3, 3e-2, log=True)}
+                            p = {
+                                "lr": trial.suggest_float("lr", 8e-4, 2e-2, log=True),
+                                "epochs": trial.suggest_int("epochs", 12, 32, step=4),
+                                "batch_size": trial.suggest_categorical("batch_size", [32, 64]),
+                            }
 
                         cut = max(10, int(0.8 * len(_yt)))
                         mdl = _build_model(_m, _ds, p, seed)
@@ -381,7 +389,7 @@ def run_benchmark(
                 flush=True,
             )
 
-    if len(datasets) >= 2 and len(models) >= 2:
+    if len(datasets) >= 2 and len(models) >= 3:
         score_mat = np.zeros((len(datasets), len(models)), dtype=np.float64)
         for i, d_name in enumerate(datasets):
             is_reg = all_results[d_name]["task"] == "regression"

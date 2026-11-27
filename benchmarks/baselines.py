@@ -96,7 +96,7 @@ def _decompose_emd_features(X: np.ndarray, max_imfs: int = 4) -> np.ndarray:
     rows = []
     for i in range(N):
         feats_i = []
-        for c in range(C):
+        for c in range(min(C, 4)):
             sig = X_3d[i, c]
             try:
                 imfs = emd.emd(sig, max_imf=max_imfs)

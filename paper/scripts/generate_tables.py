@@ -164,14 +164,25 @@ def generate_calibration_compute_table(json_path: Path, out_tex: Path) -> None:
     if not ds_names:
         return
     model_names = list(raw[ds_names[0]]["models"].keys())
+    has_brier = any(
+        "brier_mean" in raw[d]["models"].get(m, {})
+        for d in ds_names
+        for m in model_names
+    )
+    cols = "lcccc" if has_brier else "lccc"
+    hdr = (
+        r"Method & Mean ECE ($\downarrow$) & Mean Brier ($\downarrow$) & Mean Train Time / Fold (s) & Mean Inference (ms/sample) \\"
+        if has_brier
+        else r"Method & Mean ECE ($\downarrow$) & Mean Train Time / Fold (s) & Mean Inference (ms/sample) \\"
+    )
     lines = [
         r"\begin{table}[h]",
         r"\centering",
-        r"\caption{Mean Probability Calibration Error (ECE $\downarrow$), Fold Training Time, and Per-Sample Inference Latency across Multi-Domain Benchmarks.}",
+        r"\caption{Mean Probability Calibration (ECE / Brier $\downarrow$), Fold Training Time, and Per-Sample Inference Latency across Multi-Domain Benchmarks.}",
         r"\label{tab:calibration_compute}",
-        r"\begin{tabular}{lccc}",
+        f"\\begin{{tabular}}{{{cols}}}",
         r"\toprule",
-        r"Method & Mean ECE ($\downarrow$) & Mean Train Time / Fold (s) & Mean Inference (ms/sample) \\",
+        hdr,
         r"\midrule",
     ]
     for m in model_names:
@@ -180,12 +191,21 @@ def generate_calibration_compute_table(json_path: Path, out_tex: Path) -> None:
             for d in ds_names
             if m in raw[d]["models"] and "ece_mean" in raw[d]["models"][m]
         ]
+        briers = [
+            raw[d]["models"][m]["brier_mean"]
+            for d in ds_names
+            if m in raw[d]["models"] and "brier_mean" in raw[d]["models"][m]
+        ]
         times = [raw[d]["models"][m]["train_time_s"] for d in ds_names if m in raw[d]["models"]]
         infers = [raw[d]["models"][m]["infer_ms_per_sample"] for d in ds_names if m in raw[d]["models"]]
         ece_str = f"${sum(eces)/len(eces):.4f}$" if eces else "--"
+        br_str = f"${sum(briers)/len(briers):.4f}$" if briers else "--"
         t_str = f"${sum(times)/len(times):.2f}$" if times else "--"
         i_str = f"${sum(infers)/len(infers):.3f}$" if infers else "--"
-        lines.append(f"{m} & {ece_str} & {t_str} & {i_str} " + r"\\")
+        if has_brier:
+            lines.append(f"{m} & {ece_str} & {br_str} & {t_str} & {i_str} " + r"\\")
+        else:
+            lines.append(f"{m} & {ece_str} & {t_str} & {i_str} " + r"\\")
     lines.extend([r"\bottomrule", r"\end{tabular}", r"\end{table}"])
     out_tex.parent.mkdir(parents=True, exist_ok=True)
     out_tex.write_text("\n".join(lines) + "\n")

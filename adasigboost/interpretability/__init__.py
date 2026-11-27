@@ -2,6 +2,7 @@
 
 from .mode_attribution import (
     compute_mode_deletion_auc,
+    compute_mode_insertion_auc,
     extract_learned_frequencies,
     spectral_frequency_alignment_error,
     summarize_stage_modes,
@@ -14,6 +15,7 @@ from .plots import (
 
 __all__ = [
     "compute_mode_deletion_auc",
+    "compute_mode_insertion_auc",
     "extract_learned_frequencies",
     "spectral_frequency_alignment_error",
     "summarize_stage_modes",

@@ -13,6 +13,7 @@ from sklearn.metrics import accuracy_score, root_mean_squared_error
 from adasigboost import AdaSigBoostClassifier, AdaSigBoostRegressor
 from adasigboost.interpretability import (
     compute_mode_deletion_auc,
+    compute_mode_insertion_auc,
     extract_learned_frequencies,
     plot_mode_decomposition,
     spectral_frequency_alignment_error,
@@ -51,8 +52,14 @@ def run_cwru_case_study(
     preds = clf.predict(ds.X[te_mask])
     acc = float(accuracy_score(ds.y[te_mask], preds))
 
-    # Mode deletion faithfulness curve
+    # Mode deletion & insertion faithfulness curves
     del_res = compute_mode_deletion_auc(
+        clf,
+        ds.X[te_mask],
+        ds.y[te_mask],
+        metric_fn=lambda yt, F: accuracy_score(yt, np.argmax(F, axis=1)),
+    )
+    ins_res = compute_mode_insertion_auc(
         clf,
         ds.X[te_mask],
         ds.y[te_mask],
@@ -62,6 +69,11 @@ def run_cwru_case_study(
     summary = summarize_stage_modes(clf, fs=ds.fs)
     top_modes = extract_learned_frequencies(clf, fs=ds.fs)
     top_modes.sort(key=lambda r: r["weight_norm"], reverse=True)
+    atom_shares: dict[str, float] = {}
+    for rec in top_modes:
+        atom_shares[rec["atom_type"]] = atom_shares.get(rec["atom_type"], 0.0) + rec["weight_norm"]
+    tot_w = sum(atom_shares.values()) or 1.0
+    atom_shares = {k: v / tot_w for k, v in atom_shares.items()}
     # CWRU SKF 6205-2RS @ 1772-1797 RPM characteristic frequencies & bearing housing carrier harmonics
     cwru_targets_hz = [107.4, 162.2, 2800.0, 3500.0]
     hz_alignment = spectral_frequency_alignment_error(clf, cwru_targets_hz, fs=ds.fs)
@@ -79,13 +91,18 @@ def run_cwru_case_study(
     out = {
         "load_disjoint_accuracy": acc,
         "mode_deletion_auc": del_res,
+        "mode_insertion_auc": ins_res,
         "hz_alignment_error": hz_alignment,
+        "atom_weight_share": atom_shares,
         "mode_summary": {str(k): v for k, v in summary.items()},
         "top_stage_modes": top_modes[:12],
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "cwru_case_study.json").write_text(json.dumps(out, indent=2))
-    print(f"[CWRU Case Study] Load-disjoint Acc={acc:.4f}, Deletion AUC={del_res['deletion_auc']:.4f}", flush=True)
+    print(
+        f"[CWRU Case Study] Load-disjoint Acc={acc:.4f}, Deletion AUC={del_res['deletion_auc']:.4f}, Insertion AUC={ins_res['insertion_auc']:.4f}",
+        flush=True,
+    )
     return out
 
 
@@ -174,6 +191,18 @@ def run_ecg_case_study(
         ds.y[te_idx],
         metric_fn=lambda yt, F: accuracy_score(yt, np.argmax(F, axis=1)),
     )
+    ins_res = compute_mode_insertion_auc(
+        clf,
+        ds.X[te_idx],
+        ds.y[te_idx],
+        metric_fn=lambda yt, F: accuracy_score(yt, np.argmax(F, axis=1)),
+    )
+    ecg_modes = extract_learned_frequencies(clf, fs=140.0)
+    ecg_atoms: dict[str, float] = {}
+    for rec in ecg_modes:
+        ecg_atoms[rec["atom_type"]] = ecg_atoms.get(rec["atom_type"], 0.0) + rec["weight_norm"]
+    tot_e = sum(ecg_atoms.values()) or 1.0
+    ecg_atoms = {k: v / tot_e for k, v in ecg_atoms.items()}
     # Plot abnormal class sample (label != 0)
     abn_candidates = np.flatnonzero(ds.y[te_idx] != 0)
     abn_idx = int(abn_candidates[0]) if len(abn_candidates) > 0 else 0
@@ -188,11 +217,16 @@ def run_ecg_case_study(
     out = {
         "test_accuracy": acc,
         "mode_deletion_auc": del_res,
+        "mode_insertion_auc": ins_res,
+        "atom_weight_share": ecg_atoms,
         "mode_summary": {str(k): v for k, v in summarize_stage_modes(clf, fs=140.0).items()},
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "ecg_case_study.json").write_text(json.dumps(out, indent=2))
-    print(f"[ECG5000 Case Study] Acc={acc:.4f}, Deletion AUC={del_res['deletion_auc']:.4f}", flush=True)
+    print(
+        f"[ECG5000 Case Study] Acc={acc:.4f}, Deletion AUC={del_res['deletion_auc']:.4f}, Insertion AUC={ins_res['insertion_auc']:.4f}",
+        flush=True,
+    )
     return out
 
 

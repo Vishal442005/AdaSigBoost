@@ -7,7 +7,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from adasigboost import AdaSigBoostClassifier, AdaSigBoostRegressor
-from adasigboost.interpretability import compute_mode_deletion_auc
+from adasigboost.interpretability import compute_mode_deletion_auc, compute_mode_insertion_auc
 
 
 @parametrize_with_checks(
@@ -98,4 +98,12 @@ def test_mode_deletion_faithfulness_auc() -> None:
         metric_fn=lambda yt, F: roc_auc_score(yt, F[:, 0]),
     )
     assert res["deletion_scores"][0] > 0.90
+    ins = compute_mode_insertion_auc(
+        clf,
+        X[140:],
+        y[140:],
+        metric_fn=lambda yt, F: roc_auc_score(yt, F[:, 0]),
+    )
+    assert ins["insertion_scores"][-1] > 0.90
+    assert ins["insertion_auc"] > 0.65
     assert res["deletion_scores"][-1] <= 0.60

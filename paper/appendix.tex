@@ -58,7 +58,7 @@ Dataset & Domain & Channels ($C$) & Length ($T$) & Metric & Leakage Defense \\
 
 \section{Probability Calibration, Compute Efficiency, and OOD Stress Tests}
 \label{app:ood}
-Table~\ref{tab:calibration_compute} summarizes Expected Calibration Error (ECE), per-fold training runtime, and inference latency across the 8-dataset real-world benchmark suite: AdaSigBoost achieves well-calibrated probabilities ($0.0538$ ECE vs.\ $0.2833$ for MultiRocket+Ridge) and $4.4\times$ faster per-sample inference than VMD+CatBoost ($5.400$~ms vs.\ $23.909$~ms). Table~\ref{tab:ood_stress} and Figure~\ref{fig:ood_stress} evaluate zero-retraining resilience when models trained on clean data face unseen $1/f^\beta$ colored noise and abrupt sensor ramp+step baseline drift at test time.
+Table~\ref{tab:calibration_compute} summarizes Expected Calibration Error (ECE), Mean Brier Score, per-fold training runtime, and inference latency across the 8-dataset real-world benchmark suite: AdaSigBoost achieves the lowest Mean Brier Score across all 15 methods ($0.1267$, alongside $0.0538$ ECE vs.\ $0.2833$ for MultiRocket+Ridge) and $2.9\times$/$4.4\times$ faster per-sample inference than EMD+XGBoost and VMD+CatBoost ($5.400$~ms vs.\ $15.853$~ms and $23.909$~ms). Table~\ref{tab:ood_stress} and Figure~\ref{fig:ood_stress} evaluate zero-retraining resilience when models trained on clean data face unseen $1/f^\beta$ colored noise and abrupt sensor ramp+step baseline drift at test time.
 
 \input{tables/tab_calibration_compute.tex}
 \input{tables/tab_ood_stress.tex}
@@ -72,12 +72,12 @@ Table~\ref{tab:calibration_compute} summarizes Expected Calibration Error (ECE),
 
 \section{Compute Transparency and Reproducibility Checklist}
 \label{app:compute}
-All CPU experiments were executed deterministically on a 10-core/12-thread Intel Core i5-1335U (15~GiB RAM) using Python~3.10, PyTorch~2.14.0+cpu, and C++17/OpenMP. Full reproduction commands are automated via \texttt{benchmarks/reproduce\_all.py} and verified by CI (\texttt{ruff}, \texttt{mypy}, and 121 \texttt{pytest} checks with 97\% Python statement coverage including \texttt{sklearn.utils.estimator\_checks.check\_estimator}).
+Local CPU experiments were executed deterministically on a 10-core/12-thread Intel Core i5-1335U (15~GiB RAM) using Python~3.10, PyTorch~2.14.0+cpu, and C++17/OpenMP; GPU evaluations for \texttt{TimesNet} and \texttt{iTransformer} were executed on Google Colab Tesla~T4 (CUDA~13.0, Python~3.13) via \texttt{notebooks/AdaSigBoost\_GPU\_Colab.ipynb}. Full reproduction commands are automated via \texttt{benchmarks/reproduce\_all.py} and verified by CI (\texttt{ruff}, \texttt{mypy}, and 122 \texttt{pytest} checks with $>95\%$ Python statement coverage including \texttt{sklearn.utils.estimator\_checks.check\_estimator}).
 
 \section{NeurIPS / ICML Reproducibility Checklist}
 \label{app:checklist}
 \begin{itemize}
     \item \textbf{Claims \& Theory:} All theoretical claims (Lemma~1, Theorems~1--3, Proposition~1) state explicit assumptions (bounded iterates, local smoothness/strong convexity, Weak Edge, mutual incoherence) and include full proofs in Section~\ref{sec:theory}, Appendix~\ref{app:proofs}, and \texttt{docs/theory/AdaSigBoost\_Theory\_Note.tex}.
     \item \textbf{Code \& Data Availability:} Complete source code, C++17/OpenMP build files, synthetic generator, leak-free dataset loaders, and figure/table generation scripts are publicly hosted at \texttt{https://github.com/Vishal442005/AdaSigBoost} under the MIT License.
-    \item \textbf{Experimental Rigor:} Statistical dispersion ($\text{mean} \pm \text{std}$), Friedman/Nemenyi rank tests, Holm-Bonferroni Wilcoxon $p$-values, ECE calibration metrics, wall-clock runtimes, and leakage defenses (Table~\ref{tab:datasets_audit}) are reported transparently.
+    \item \textbf{Experimental Rigor:} Statistical dispersion ($\text{mean} \pm \text{std}$), Friedman/Nemenyi rank tests, Holm-Bonferroni Wilcoxon $p$-values, ECE and Brier calibration metrics, wall-clock runtimes, and leakage defenses (Table~\ref{tab:datasets_audit}) are reported transparently.
 \end{itemize}

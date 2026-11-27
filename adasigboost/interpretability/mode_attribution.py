@@ -33,22 +33,36 @@ def spectral_frequency_alignment_error(
     model: Any,
     target_freqs_hz: list[float] | np.ndarray,
     fs: float,
-) -> dict[str, float]:
-    """Compute minimum Hz error between learned weighted active modes and physical fault/target Hz."""
-    records = extract_learned_frequencies(model, fs=fs)
-    if not records:
-        return {"mean_min_hz_error": float("inf"), "max_min_hz_error": float("inf")}
+) -> dict[str, Any]:
+    """Compute minimum Hz error between learned unique active mode frequencies and physical target Hz."""
+    summary = summarize_stage_modes(model, fs=fs)
+    active = [
+        (v["cum_weight_norm"], v["weighted_freq_hz"])
+        for v in summary.values()
+        if v["cum_weight_norm"] > 0.0
+    ]
+    if not active:
+        records = extract_learned_frequencies(model, fs=fs)
+        if not records:
+            return {"mean_min_hz_error": float("inf"), "max_min_hz_error": float("inf")}
+        active = [(r["weight_norm"], r["freq_hz"]) for r in records]
 
-    learned_hz = np.array([r["freq_hz"] for r in records], dtype=np.float64)
-    weights = np.array([r["weight_norm"] for r in records], dtype=np.float64)
-    top_idx = np.argsort(weights)[::-1][: max(len(target_freqs_hz) * 3, 5)]
-    top_freqs = learned_hz[top_idx]
+    active.sort(key=lambda pair: pair[0], reverse=True)
+    top_freqs = np.array([f for _, f in active], dtype=np.float64)
 
     errors = [float(np.min(np.abs(top_freqs - f_true))) for f_true in target_freqs_hz]
+    matched = [float(top_freqs[int(np.argmin(np.abs(top_freqs - f_true)))]) for f_true in target_freqs_hz]
     return {
         "mean_min_hz_error": float(np.mean(errors)),
         "max_min_hz_error": float(np.max(errors)),
+        "matched_freqs_hz": matched,
     }
+
+
+def _mode_base_margin(model: Any, X: np.ndarray, F_full: np.ndarray, contribs: np.ndarray) -> np.ndarray:
+    if getattr(model, "n_tabular_features_", 0) == 0:
+        return np.tile(model.init_pred_[np.newaxis, :], (len(X), 1))
+    return F_full - np.sum(contribs, axis=1)
 
 
 def compute_mode_deletion_auc(
@@ -58,21 +72,12 @@ def compute_mode_deletion_auc(
     metric_fn: Any,
     Z: np.ndarray | None = None,
 ) -> dict[str, Any]:
-    """Compute Mode Deletion Faithfulness AUC by masking modes ranked by importance.
-
-    Measures how rapidly predictive performance degrades as the top-ranked modes
-    (by cumulative |w_k|) are ablated from the model's margin F_M.
-    """
+    """Compute Mode Deletion Faithfulness AUC by masking modes ranked by importance."""
     F_full, contribs = model._raw_predict_and_contributions(X, Z=Z)
-    # contribs shape: (N, K, L_out)
     K = contribs.shape[1]
     mode_rank = np.argsort(np.sum(np.abs(contribs), axis=(0, 2)))[::-1]
 
-    # Separate baseline margin (init_pred + tabular branch) so deleted modes leave zero float residue
-    if getattr(model, "n_tabular_features_", 0) == 0:
-        base_margin = np.tile(model.init_pred_[np.newaxis, :], (len(X), 1))
-    else:
-        base_margin = F_full - np.sum(contribs, axis=1)
+    base_margin = _mode_base_margin(model, X, F_full, contribs)
     scores = [float(metric_fn(y, F_full))]
     kept = set(range(K))
     for k in mode_rank:
@@ -88,6 +93,35 @@ def compute_mode_deletion_auc(
     return {
         "deletion_scores": scores,
         "deletion_auc": auc,
+        "mode_order": [int(k) for k in mode_rank],
+        "n_modes": K,
+    }
+
+
+def compute_mode_insertion_auc(
+    model: Any,
+    X: np.ndarray,
+    y: np.ndarray,
+    metric_fn: Any,
+    Z: np.ndarray | None = None,
+) -> dict[str, Any]:
+    """Compute Mode Insertion Faithfulness AUC by adding top-ranked modes from base margin."""
+    F_full, contribs = model._raw_predict_and_contributions(X, Z=Z)
+    K = contribs.shape[1]
+    mode_rank = np.argsort(np.sum(np.abs(contribs), axis=(0, 2)))[::-1]
+
+    base_margin = _mode_base_margin(model, X, F_full, contribs)
+    F_curr = base_margin.copy()
+    scores = [float(metric_fn(y, F_curr))]
+    for k in mode_rank:
+        F_curr = F_curr + contribs[:, int(k), :]
+        scores.append(float(metric_fn(y, F_curr)))
+
+    x_grid = np.linspace(0.0, 1.0, len(scores))
+    auc = float(np.trapezoid(scores, x_grid)) if hasattr(np, "trapezoid") else float(np.trapz(scores, x_grid))
+    return {
+        "insertion_scores": scores,
+        "insertion_auc": auc,
         "mode_order": [int(k) for k in mode_rank],
         "n_modes": K,
     }

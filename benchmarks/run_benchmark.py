@@ -375,6 +375,7 @@ def run_benchmark(
 
             primaries = [fm["primary"] for fm in fold_metrics]
             eces = [fm["ece"] for fm in fold_metrics if "ece" in fm]
+            briers = [fm["brier"] for fm in fold_metrics if "brier" in fm]
             rec: dict[str, Any] = {
                 "primary_mean": float(np.mean(primaries)),
                 "primary_std": float(np.std(primaries)),
@@ -383,6 +384,8 @@ def run_benchmark(
             }
             if eces:
                 rec["ece_mean"] = float(np.mean(eces))
+            if briers:
+                rec["brier_mean"] = float(np.mean(briers))
             all_results[ds_name]["models"][m_name] = rec
             print(
                 f"[{ds_name:18s}] {m_name:24s} -> {ds.metric}={rec['primary_mean']:.4f} ± {rec['primary_std']:.4f} ({rec['train_time_s']:.2f}s)",
@@ -443,6 +446,7 @@ if __name__ == "__main__":
             "LightGBM",
             "CatBoost",
             "DWT+LightGBM",
+            "EMD+XGBoost",
             "VMD+CatBoost",
             "MultiRocket+Ridge",
             "MultiRocket+LightGBM",
@@ -450,6 +454,8 @@ if __name__ == "__main__":
             "LearnableFilter+LightGBM",
             "PatchTST",
             "ModernTCN",
+            "TimesNet",
+            "iTransformer",
         ],
     )
     parser.add_argument("--folds", type=int, default=3)

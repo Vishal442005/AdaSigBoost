@@ -1,24 +1,25 @@
 \begin{table}[t]
 \centering
-\caption{Statistical Significance vs. AdaSigBoost (Friedman $p = 0.0558$, CD $= 7.02$).}
+\caption{Statistical Significance vs. AdaSigBoost (Friedman $p = 0.0366$, CD $= 7.58$).}
 \label{tab:stats_sig}
 \begin{tabular}{lccc}
 \toprule
 Baseline & Mean Rank & Raw $p$ & Holm-Adjusted $p$ \\
 \midrule
-LearnableFilter+MLP & $12.12$ & $0.0234$ & $0.3047$ \\
-XGBoost & $8.06$ & $0.0742$ & $0.8906$ \\
-ModernTCN & $7.38$ & $0.0859$ & $0.9453$ \\
-iTransformer & $10.50$ & $0.0977$ & $0.9766$ \\
-DWT+LightGBM & $7.44$ & $0.1094$ & $0.9844$ \\
-TimesNet & $7.38$ & $0.1719$ & $1.0000$ \\
-VMD+CatBoost & $7.62$ & $0.1914$ & $1.0000$ \\
-LightGBM & $6.88$ & $0.2305$ & $1.0000$ \\
-CatBoost & $6.94$ & $0.2734$ & $1.0000$ \\
-LearnableFilter+LightGBM & $8.00$ & $0.2969$ & $1.0000$ \\
-PatchTST & $6.38$ & $0.2969$ & $1.0000$ \\
-MultiRocket+Ridge & $4.81$ & $0.6016$ & $1.0000$ \\
-MultiRocket+LightGBM & $5.50$ & $0.7031$ & $1.0000$ \\
+EMD+XGBoost & $10.44$ & $0.0039$ & $0.0547$ \\
+LearnableFilter+MLP & $12.88$ & $0.0234$ & $0.3047$ \\
+XGBoost & $8.62$ & $0.0742$ & $0.8906$ \\
+ModernTCN & $7.62$ & $0.0859$ & $0.9453$ \\
+iTransformer & $11.00$ & $0.0977$ & $0.9766$ \\
+DWT+LightGBM & $7.81$ & $0.1094$ & $0.9844$ \\
+TimesNet & $7.50$ & $0.1719$ & $1.0000$ \\
+VMD+CatBoost & $7.75$ & $0.1914$ & $1.0000$ \\
+LightGBM & $7.38$ & $0.2305$ & $1.0000$ \\
+CatBoost & $7.44$ & $0.2734$ & $1.0000$ \\
+LearnableFilter+LightGBM & $8.25$ & $0.2969$ & $1.0000$ \\
+PatchTST & $6.50$ & $0.2969$ & $1.0000$ \\
+MultiRocket+Ridge & $5.06$ & $0.6016$ & $1.0000$ \\
+MultiRocket+LightGBM & $5.75$ & $0.7031$ & $1.0000$ \\
 \bottomrule
 \end{tabular}
 \end{table}
